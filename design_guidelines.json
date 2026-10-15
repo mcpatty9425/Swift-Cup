@@ -1,0 +1,144 @@
+{
+  "app_name": "The Swifty Cup 2026",
+  "personality": "7 Dark-First Utility with 6 Glass / Luxe DARK accents",
+  "personality_one_liner": "A premium, broadcast-style dark UI built for high-contrast visibility on the course, elevated by cinematic golf aesthetics and gold accents.",
+  "color": {
+    "surface": "#0e1a2b", 
+    "onSurface": "#f7fafc",
+    "surfaceSecondary": "#14243a", 
+    "onSurfaceSecondary": "#9fb0c7",
+    "surfaceTertiary": "#1d334f",
+    "onSurfaceTertiary": "#9fb0c7",
+    "surfaceInverse": "#f7fafc", 
+    "onSurfaceInverse": "#0e1a2b",
+    "brand": "#f7c948",
+    "brandPrimary": "#4fb3ff", 
+    "onBrandPrimary": "#0e1a2b",
+    "brandSecondary": "#ff8c5a", 
+    "onBrandSecondary": "#0e1a2b",
+    "brandTertiary": "#f7c948", 
+    "onBrandTertiary": "#0e1a2b",
+    "success": "#5dd39e", 
+    "onSuccess": "#0e1a2b",
+    "warning": "#f7c948", 
+    "onWarning": "#0e1a2b",
+    "error": "#ff6b6b", 
+    "onError": "#f7fafc",
+    "info": "#4fb3ff", 
+    "onInfo": "#0e1a2b",
+    "border": "#1d334f", 
+    "borderStrong": "#2a4365", 
+    "divider": "#1d334f",
+    "muted": "#9fb0c7", 
+    "onBrand": "#0e1a2b",
+    "background": "#07111f"
+  },
+  "typography": {
+    "displayFontFamily": "Barlow Condensed",
+    "textFontFamily": "Manrope",
+    "scale": { "sm": 12, "base": 14, "lg": 16, "xl": 20, "2xl": 24 }
+  },
+  "spacing": { 
+    "rule": "Generous spacing for tap targets (min 56pt) on course. Use md/lg for tight component groupings and xl/2xl to separate matches.", 
+    "xs": 4, 
+    "sm": 8, 
+    "md": 12, 
+    "lg": 16, 
+    "xl": 24, 
+    "2xl": 32, 
+    "3xl": 48 
+  },
+  "radius_tokens": { "sm": 6, "md": 12, "lg": 20, "pill": 999 },
+  "shadow_tier": "0",
+  "navigation": "bottom_tabs",
+  "icon_set": "Ionicons",
+  "glassmorphism": {
+    "enabled": "true",
+    "do's": ["Use on bottom tab bar", "Use on sticky headers above scrolling scorecards", "Use subtle blur over the hero banner"],
+    "dont's": ["Do not use on match cards or buttons (need solid contrast outdoors)"]
+  },
+  "platform_libraries": {
+    "glass": {
+      "ios": "expo-glass-effect",
+      "android": "expo-blur",
+      "low_end_android_fallback": "solid surfaceSecondary"
+    },
+    "image": "expo-image",
+    "blur": "expo-blur",
+    "bottom_sheet": "@gorhom/bottom-sheet",
+    "animation": "react-native-reanimated",
+    "gesture": "react-native-gesture-handler"
+  },
+  "screens": [
+    { 
+      "name": "Teams", 
+      "purpose": "Display overall leaderboard and the two rosters (NZ vs World).", 
+      "states": { "loading": "Centered spinner", "empty": "N/A", "error": "Failed to load teams." }, 
+      "layout": "Hero banner at top (trophy). Overall scoreboard fixed below hero. Then a Segmented Control to flip between Team NZ and Team World rosters. Vertical list of player cards (photo, name, bio)." 
+    },
+    { 
+      "name": "R1 (Alternate Shot)", 
+      "purpose": "Show Round 1 2v2 matches and allow scoring.", 
+      "states": { "loading": "Skeleton of match cards", "empty": "No pairings set for Round 1 yet.", "error": "Failed to load matches." }, 
+      "layout": "List of match cards. Each card has 2 NZ players vs 2 World players, a live status pill ('🇳🇿 2 UP thru 14'), and a row of 3 massive buttons for one-hand entry: 🇳🇿 WIN, HALVED, WORLD WIN." 
+    },
+    { 
+      "name": "R2 (Best Ball)", 
+      "purpose": "Show Round 2 2v2 matches.", 
+      "states": { "loading": "Skeleton", "empty": "No pairings set.", "error": "Failed to load." }, 
+      "layout": "Identical layout to R1, reflecting Best Ball 2v2 format." 
+    },
+    { 
+      "name": "R3 (Heads Up)", 
+      "purpose": "Show Round 3 1v1 singles matches.", 
+      "states": { "loading": "Skeleton", "empty": "No pairings set.", "error": "Failed to load." }, 
+      "layout": "List of match cards. 1 NZ player vs 1 World player. Same live status pill and 3 large result buttons." 
+    },
+    { 
+      "name": "Admin PIN", 
+      "purpose": "Gatekeep admin access.", 
+      "states": { "loading": "Spinner on button", "empty": "N/A", "error": "Incorrect PIN" }, 
+      "layout": "Simple dark modal with a numeric PIN pad (huge touch targets) and a submit button." 
+    },
+    { 
+      "name": "Admin Bios", 
+      "purpose": "Edit player details.", 
+      "states": { "loading": "Spinner", "empty": "No players found.", "error": "Error loading bios." }, 
+      "layout": "List of players. Tapping opens a bottom sheet to edit Name, Bio, and replace Photo." 
+    },
+    { 
+      "name": "Admin Pairings", 
+      "purpose": "Set matches for a round.", 
+      "states": { "loading": "Spinner", "empty": "N/A", "error": "Error saving pairings." }, 
+      "layout": "Select round dropdown. List of slots. Tap slot to select player from dropdown (with visual warning if player already used in that round). Huge sticky Save Changes button at bottom." 
+    }
+  ],
+  "images": {
+    "hero_banner": { 
+      "url": "local_asset", 
+      "alt": "Cinematic Swifty Cup trophy banner with NZ and World colors" 
+    },
+    "empty_course": { 
+      "url": "https://images.unsplash.com/photo-1592937238247-cd0090e02f65?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NjZ8MHwxfHNlYXJjaHwxfHxnb2xmJTIwY291cnNlJTIwbGFuZHNjYXBlJTIwcHJlbWl1bXxlbnwwfHx8fDE3OTIxMDQxNDR8MA&ixlib=rb-4.1.0&q=85", 
+      "dark": "https://images.unsplash.com/photo-1592937238247-cd0090e02f65?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NjZ8MHwxfHNlYXJjaHwxfHxnb2xmJTIwY291cnNlJTIwbGFuZHNjYXBlJTIwcHJlbWl1bXxlbnwwfHx8fDE3OTIxMDQxNDR8MA&ixlib=rb-4.1.0&q=85", 
+      "alt": "Moody premium golf course landscape" 
+    },
+    "empty_ball": { 
+      "url": "https://images.unsplash.com/photo-1689732940081-8e48bc8c6397?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2Mzl8MHwxfHNlYXJjaHwxfHxnb2xmZXIlMjBzd2luZ2luZyUyMHByZW1pdW18ZW58MHx8fHwxNzkyMTA0MTQ0fDA&ixlib=rb-4.1.0&q=85", 
+      "dark": "https://images.unsplash.com/photo-1689732940081-8e48bc8c6397?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2Mzl8MHwxfHNlYXJjaHwxfHxnb2xmZXIlMjBzd2luZ2luZyUyMHByZW1pdW18ZW58MHx8fHwxNzkyMTA0MTQ0fDA&ixlib=rb-4.1.0&q=85", 
+      "alt": "Golf ball on dark background" 
+    }
+  },
+  "instructions_to_main_agent": [
+    "Design the layout as a dark, high-contrast 'Stadium Night' theme. The primary canvas is deep navy (#0e1a2b), using NZ blue (#4fb3ff) and World orange (#ff8c5a) as team identifiers.",
+    "The hero banner is provided by the user in a ZIP file (banner.png). Place it at the top of the Teams/Leaderboard view. Use the provided asset. If unavailable during prototyping, mock it with a dark gradient placeholder.",
+    "Use 'Barlow Condensed' for all numeric scores, match status (e.g. 2 UP), and round headers. Use 'Manrope' for player names and body text.",
+    "For the Match Cards on R1, R2, and R3: These must be massive, legible outdoors. Display the team colors heavily. Each Match Card should have a 'Live' pulsing dot (use a small reanimated circle with the success or info color).",
+    "The 3 result buttons (🇳🇿 WIN, HALVED, WORLD WIN) must have a min-height of 56pt and fill the width of the card. They need to be easily tapped with one thumb while holding the phone. Style the buttons with the team colors: NZ Win (Blue), World Win (Orange), Halved (Gold/Grey).",
+    "Use the NZ flag emoji 🇳🇿 explicitly as requested, do not substitute with the letters 'NZ'.",
+    "For the Admin area, use a simple 3-dot menu icon in the header to open the PIN modal.",
+    "In the Admin Pairings page, use a highly visible warning state (borderStrong in Danger Red) if a player is duplicated in the same round.",
+    "Make sure all bottom tabs and headers have a glassmorphism effect, except for android low-end devices which should fallback to solid surfaceSecondary.",
+    "Ensure the scoreboard remains sticky when scrolling through match lists so the overall context is always visible."
+  ]
+}
