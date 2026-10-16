@@ -1,13 +1,18 @@
 import { Image } from "expo-image";
-import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React from "react";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAppState } from "@/src/api";
-import { Avatar } from "@/src/avatar";
 import { usePlayer } from "@/src/player-context";
-import { colors, radius, spacing } from "@/src/theme";
+
+// Stylistic one-off: light cream + forest-green card (Ryder Cup / Masters feel).
+// These colors are intentional literals, independent of the dark app theme.
+const CREAM = "#f1ede1";
+const FOREST = "#0b4a34";
+const FOREST_SOFT = "#4a6a5a";
+const CARD = "#ffffff";
+const SELECTED = "#f4ea9c";
 
 export default function PickPlayerScreen() {
   const insets = useSafeAreaInsets();
@@ -23,98 +28,167 @@ export default function PickPlayerScreen() {
   const players = data?.players ?? [];
   const nz = players.filter((p) => p.team === "NZ");
   const world = players.filter((p) => p.team === "WORLD");
+  // Pair rows side by side; pad short side with nulls
+  const rows = Math.max(nz.length, world.length);
+  const pairs: { world: any; nz: any }[] = [];
+  for (let i = 0; i < rows; i++) pairs.push({ world: world[i] ?? null, nz: nz[i] ?? null });
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <View style={styles.hero}>
-        <Image source={require("../assets/images/banner.png")} style={styles.heroImg} contentFit="cover" />
-        <LinearGradient
-          colors={["transparent", "rgba(7,17,31,0.7)", colors.background]}
-          style={StyleSheet.absoluteFill}
-        />
-      </View>
+    <View style={[styles.root, { paddingTop: insets.top }]}>
       <ScrollView
-        contentContainerStyle={{ paddingTop: insets.top + 20, paddingBottom: insets.bottom + 32 }}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 32, paddingTop: 20 }}
         testID="pick-player-screen"
       >
-        <View style={styles.header}>
-          <Text style={styles.kicker}>WELCOME TO</Text>
-          <Text style={styles.title}>The Swifty Cup 2026</Text>
-          <Text style={styles.subtitle}>Tap your name to get started. Your pick is saved on this device.</Text>
+        <View style={styles.heroBadge}>
+          <Image
+            source={require("../assets/images/banner.png")}
+            style={styles.heroImg}
+            contentFit="cover"
+          />
+        </View>
+
+        <Text style={styles.tagline}>RYDER CUP STYLE</Text>
+        <Text style={styles.title}>The Swifty Cup</Text>
+        <Text style={styles.titleItalic}>2026</Text>
+        <View style={styles.titleRule} />
+        <Text style={styles.meta}>3 ROUNDS  •  1 WINNER  •  12 PLAYERS</Text>
+
+        <Text style={styles.selectKicker}>SELECT YOUR NAME</Text>
+
+        {/* Column headers */}
+        <View style={styles.colHeaders}>
+          <Text style={styles.colHeaderWorld}>🌍  TEAM WORLD</Text>
+          <Text style={styles.colHeaderNz}>TEAM NZ  🇳🇿</Text>
         </View>
 
         {isLoading ? (
-          <ActivityIndicator color={colors.gold} style={{ marginTop: 40 }} />
+          <ActivityIndicator color={FOREST} style={{ marginTop: 40 }} />
         ) : (
-          <>
-            <Group title="🇳🇿 Team NZ" color={colors.nz}>
-              {nz.map((p) => (
-                <PlayerPick key={p.id} name={p.name} photo={p.photo_path} team="NZ" onPress={() => choose(p.id)} />
-              ))}
-            </Group>
-            <Group title="🌍 Team World" color={colors.world}>
-              {world.map((p) => (
-                <PlayerPick
-                  key={p.id}
-                  name={p.name}
-                  photo={p.photo_path}
-                  team="WORLD"
-                  onPress={() => choose(p.id)}
-                />
-              ))}
-            </Group>
-          </>
+          <View style={styles.grid}>
+            {pairs.map((pair, i) => (
+              <View key={i} style={styles.row}>
+                <NameChip player={pair.world} onPick={choose} />
+                <NameChip player={pair.nz} onPick={choose} />
+              </View>
+            ))}
+          </View>
         )}
       </ScrollView>
     </View>
   );
 }
 
-function Group({ title, color, children }: { title: string; color: string; children: React.ReactNode }) {
+function NameChip({ player, onPick }: { player: any; onPick: (id: string) => void }) {
+  if (!player) return <View style={[styles.chip, styles.chipEmpty]} />;
+  const display = displayName(player.name);
   return (
-    <View style={{ marginTop: spacing.xl, paddingHorizontal: spacing.lg }}>
-      <Text style={[styles.groupTitle, { color }]}>{title}</Text>
-      <View style={{ gap: spacing.sm }}>{children}</View>
-    </View>
-  );
-}
-
-function PlayerPick({
-  name,
-  photo,
-  team,
-  onPress,
-}: {
-  name: string;
-  photo: string | null;
-  team: "NZ" | "WORLD";
-  onPress: () => void;
-}) {
-  return (
-    <Pressable style={styles.row} onPress={onPress} testID={`pick-${name}`}>
-      <Avatar photoPath={photo} name={name} size={44} team={team} />
-      <Text style={styles.rowName}>{name}</Text>
+    <Pressable
+      style={styles.chip}
+      onPress={() => onPick(player.id)}
+      testID={`pick-${player.name}`}
+    >
+      <Text style={styles.chipText} numberOfLines={1}>
+        {display}
+      </Text>
     </Pressable>
   );
 }
 
+// Short display: use first name only if it fits
+function displayName(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  return parts[0] || name;
+}
+
 const styles = StyleSheet.create({
-  hero: { position: "absolute", top: 0, left: 0, right: 0, height: 220 },
-  heroImg: { width: "100%", height: "100%" },
-  header: { paddingHorizontal: spacing.lg },
-  kicker: { color: colors.gold, fontSize: 12, fontWeight: "900", letterSpacing: 3 },
-  title: { color: colors.onSurface, fontSize: 28, fontWeight: "900", marginTop: 4 },
-  subtitle: { color: colors.muted, marginTop: 6, fontSize: 13 },
-  groupTitle: { fontSize: 13, fontWeight: "900", letterSpacing: 2, marginBottom: spacing.sm },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    backgroundColor: colors.surfaceSecondary,
-    borderRadius: radius.md,
-    padding: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.border,
+  root: { flex: 1, backgroundColor: CREAM },
+  heroBadge: {
+    alignSelf: "center",
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    overflow: "hidden",
+    borderWidth: 2,
+    borderColor: FOREST,
+    backgroundColor: "#f7c948",
   },
-  rowName: { color: colors.onSurface, fontSize: 16, fontWeight: "700" },
+  heroImg: { width: "100%", height: "100%" },
+  tagline: {
+    color: FOREST_SOFT,
+    textAlign: "center",
+    fontSize: 12,
+    fontWeight: "700",
+    letterSpacing: 4,
+    marginTop: 20,
+  },
+  title: {
+    color: FOREST,
+    textAlign: "center",
+    fontSize: 44,
+    fontWeight: "900",
+    marginTop: 6,
+    letterSpacing: 1,
+  },
+  titleItalic: {
+    color: FOREST,
+    textAlign: "center",
+    fontSize: 36,
+    fontWeight: "900",
+    fontStyle: "italic",
+    marginTop: -4,
+  },
+  titleRule: {
+    alignSelf: "center",
+    width: 180,
+    height: 2,
+    backgroundColor: FOREST,
+    marginTop: 10,
+    opacity: 0.9,
+  },
+  meta: {
+    color: FOREST_SOFT,
+    textAlign: "center",
+    fontSize: 12,
+    fontWeight: "700",
+    letterSpacing: 2,
+    marginTop: 14,
+  },
+  selectKicker: {
+    color: FOREST_SOFT,
+    textAlign: "center",
+    fontSize: 12,
+    fontWeight: "700",
+    letterSpacing: 3,
+    marginTop: 28,
+  },
+  colHeaders: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    marginTop: 14,
+    marginBottom: 10,
+  },
+  colHeaderWorld: { color: FOREST, fontSize: 11, fontWeight: "900", letterSpacing: 2 },
+  colHeaderNz: { color: FOREST, fontSize: 11, fontWeight: "900", letterSpacing: 2 },
+  grid: { paddingHorizontal: 20, gap: 10 },
+  row: { flexDirection: "row", gap: 10 },
+  chip: {
+    flex: 1,
+    backgroundColor: CARD,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#dcd6c3",
+    paddingVertical: 16,
+    paddingHorizontal: 14,
+    alignItems: "flex-start",
+    minHeight: 56,
+    justifyContent: "center",
+  },
+  chipEmpty: { opacity: 0, borderWidth: 0 },
+  chipText: {
+    color: FOREST,
+    fontSize: 20,
+    fontWeight: "800",
+    fontStyle: "italic",
+  },
 });
