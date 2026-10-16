@@ -135,6 +135,25 @@ class SettingsUpdate(BaseModel):
     world_team_name: Optional[str] = None
 
 
+class RoundInfo(BaseModel):
+    round: RoundT
+    format: str
+    venue: str = "Course TBD"
+    date: str = "Date TBD"
+
+
+class RoundUpdate(BaseModel):
+    format: Optional[str] = None
+    venue: Optional[str] = None
+    date: Optional[str] = None
+
+
+class SelfPlayerUpdate(BaseModel):
+    player_id: str
+    bio: Optional[str] = None
+    photo_path: Optional[str] = None  # "" to clear
+
+
 class PinLogin(BaseModel):
     pin: str
 
@@ -318,6 +337,14 @@ async def seed_if_empty() -> None:
     if await db.settings.count_documents({}) == 0:
         await db.settings.insert_one({"_id": "default", **Settings().model_dump()})
 
+    if await db.rounds.count_documents({}) == 0:
+        defaults = [
+            RoundInfo(round=1, format="Alternate Shot").model_dump(),
+            RoundInfo(round=2, format="Best Ball").model_dump(),
+            RoundInfo(round=3, format="Heads Up").model_dump(),
+        ]
+        await db.rounds.insert_many([d.copy() for d in defaults])
+
 
 @app.on_event("startup")
 async def on_startup() -> None:
@@ -345,6 +372,27 @@ async def all_players() -> List[dict]:
 
 async def all_matches() -> List[dict]:
     return await db.matches.find({}, {"_id": 0}).sort([("round", 1), ("index", 1)]).to_list(200)
+
+
+async def all_rounds() -> List[dict]:
+    docs = await db.rounds.find({}, {"_id": 0}).sort("round", 1).to_list(10)
+    # Compute status for each from matches
+    matches = await all_matches()
+    out = []
+    for d in docs:
+        r = d["round"]
+        rm = [m for m in matches if m["round"] == r]
+        if rm and all(m.get("result") for m in rm):
+            status = "COMPLETE"
+        elif any(m.get("result") or m.get("live_status") for m in rm):
+            status = "LIVE"
+        else:
+            status = "UPCOMING"
+        d["status"] = status
+        d["completed"] = sum(1 for m in rm if m.get("result"))
+        d["total"] = len(rm)
+        out.append(d)
+    return out
 
 
 # ---------- Endpoints ----------
@@ -583,8 +631,78 @@ async def full_state() -> dict:
     settings = await get_settings()
     players = await all_players()
     matches = await all_matches()
+    rounds = await all_rounds()
     lb = await leaderboard()
-    return {"settings": settings, "players": players, "matches": matches, "leaderboard": lb}
+    return {"settings": settings, "players": players, "matches": matches, "rounds": rounds, "leaderboard": lb}
+
+
+# --- Rounds
+@api_router.get("/rounds")
+async def list_rounds() -> List[dict]:
+    return await all_rounds()
+
+
+@api_router.patch("/rounds/{round_num}", dependencies=[Depends(require_admin)])
+async def update_round(round_num: int, update: RoundUpdate) -> dict:
+    if round_num not in (1, 2, 3):
+        raise HTTPException(status_code=400, detail="Invalid round")
+    patch = {k: v for k, v in update.model_dump(exclude_unset=True).items() if v is not None}
+    if patch:
+        await db.rounds.update_one({"round": round_num}, {"$set": patch}, upsert=False)
+    doc = await db.rounds.find_one({"round": round_num}, {"_id": 0})
+    await broker.broadcast({"type": "rounds_changed", "payload": doc})
+    return doc or {}
+
+
+# --- Self edit (public player edits own bio/photo)
+@api_router.patch("/players/{player_id}/self")
+async def self_update_player(player_id: str, update: SelfPlayerUpdate) -> dict:
+    if update.player_id != player_id:
+        raise HTTPException(status_code=400, detail="Player mismatch")
+    patch: dict = {}
+    if update.bio is not None:
+        patch["bio"] = update.bio
+    if update.photo_path is not None:
+        patch["photo_path"] = update.photo_path or None
+    if not patch:
+        raise HTTPException(status_code=400, detail="No fields to update")
+    result = await db.players.update_one({"id": player_id}, {"$set": patch})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Player not found")
+    doc = await db.players.find_one({"id": player_id}, {"_id": 0})
+    await broker.broadcast({"type": "player_updated", "payload": doc})
+    return doc or {}
+
+
+@api_router.post("/photos-self")
+async def upload_photo_self(player_id: str = Form(...), file: UploadFile = File(...)) -> dict:
+    """Public self-upload: a player updating their own photo. No admin JWT required."""
+    if not EMERGENT_KEY:
+        raise HTTPException(status_code=500, detail="Storage not configured")
+    # ensure player exists
+    exists = await db.players.find_one({"id": player_id}, {"_id": 0, "id": 1})
+    if not exists:
+        raise HTTPException(status_code=404, detail="Player not found")
+    content = await file.read()
+    if len(content) > 10 * 1024 * 1024:
+        raise HTTPException(status_code=413, detail="Photo too large (max 10MB)")
+    ext = (file.filename or "").split(".")[-1].lower() if file.filename and "." in file.filename else "jpg"
+    if ext not in {"jpg", "jpeg", "png", "heic", "heif", "webp"}:
+        ext = "jpg"
+    path = f"{APP_NAME}/players/{player_id}/{uuid.uuid4().hex}.{ext}"
+    content_type = file.content_type or "image/jpeg"
+    try:
+        await run_in_threadpool(_put_object, path, content, content_type)
+    except requests.HTTPError as exc:
+        status = exc.response.status_code if exc.response is not None else 500
+        if status == 402:
+            raise HTTPException(status_code=402, detail="Storage out of credits") from exc
+        raise HTTPException(status_code=502, detail=f"Storage error: {status}") from exc
+
+    await db.players.update_one({"id": player_id}, {"$set": {"photo_path": path}})
+    doc = await db.players.find_one({"id": player_id}, {"_id": 0})
+    await broker.broadcast({"type": "player_updated", "payload": doc})
+    return {"photo_path": path, "player": doc}
 
 
 app.include_router(api_router)

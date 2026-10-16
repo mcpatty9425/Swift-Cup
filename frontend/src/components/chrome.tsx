@@ -2,6 +2,7 @@
 import Ionicons from "@react-native-vector-icons/ionicons";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   KeyboardAvoidingView,
@@ -29,6 +30,7 @@ export function LiveDot({ connected }: { connected?: boolean }) {
 
 export function Header({ title, showAdminMenu = true }: { title?: string; showAdminMenu?: boolean }) {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [pinOpen, setPinOpen] = useState(false);
   const [pin, setPin] = useState("");
@@ -82,17 +84,30 @@ export function Header({ title, showAdminMenu = true }: { title?: string; showAd
         <Pressable style={styles.menuBackdrop} onPress={() => setMenuOpen(false)}>
           <View style={[styles.menuCard, { marginTop: insets.top + 40 }]}>
             {isAdmin ? (
-              <Pressable
-                testID="menu-logout"
-                style={styles.menuItem}
-                onPress={async () => {
-                  setMenuOpen(false);
-                  await logout();
-                }}
-              >
-                <Ionicons name="log-out-outline" size={18} color={colors.onSurface} />
-                <Text style={styles.menuItemText}>Admin Logout</Text>
-              </Pressable>
+              <>
+                <Pressable
+                  testID="menu-admin-bios"
+                  style={styles.menuItem}
+                  onPress={() => {
+                    setMenuOpen(false);
+                    router.push("/bios" as any);
+                  }}
+                >
+                  <Ionicons name="people-outline" size={18} color={colors.onSurface} />
+                  <Text style={styles.menuItemText}>Admin: All Bios</Text>
+                </Pressable>
+                <Pressable
+                  testID="menu-logout"
+                  style={styles.menuItem}
+                  onPress={async () => {
+                    setMenuOpen(false);
+                    await logout();
+                  }}
+                >
+                  <Ionicons name="log-out-outline" size={18} color={colors.onSurface} />
+                  <Text style={styles.menuItemText}>Admin Logout</Text>
+                </Pressable>
+              </>
             ) : (
               <Pressable
                 testID="menu-admin-login"

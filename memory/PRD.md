@@ -1,56 +1,56 @@
 # The Swifty Cup 2026 — PRD
 
 ## Summary
-Mobile-first (Expo React Native) Ryder-Cup-style golf competition app for Team NZ 🇳🇿 vs Team World 🌍. Public users browse teams and update live scores; the organiser (PIN 1926) manages players and pairings.
+Mobile-first Expo app for a Ryder-Cup-style golf competition between Team NZ 🇳🇿 and Team World 🌍. Each player picks their own name on first launch (stored on-device). Public users browse rounds, score matches, and view pairings; the organiser (PIN 1926) manages players, pairings and round metadata via a discreet 3-dot menu.
 
 ## Stack
-- **Frontend**: Expo SDK 57 (expo-router, expo-image, expo-image-picker, expo-image-manipulator, @react-native-vector-icons/ionicons, @tanstack/react-query, react-native-safe-area-context)
-- **Backend**: FastAPI + Motor (async MongoDB) on `/api/*`
-- **Auth**: PIN → JWT (HS256). PIN default `1926`, overridable via `/api/admin/change-pin`.
-- **Realtime**: WebSocket `/api/ws` broadcasts `match_updated`, `player_updated`, `pairings_changed`, `settings_changed` events. Client invalidates React Query cache on any message.
-- **Storage**: Emergent Managed Object Storage for player photos (`/api/photos` upload, `/api/photos/{path}` fetch).
+- **Frontend**: Expo SDK 57 (expo-router, expo-image, expo-image-picker, expo-image-manipulator, @react-native-vector-icons/ionicons, @tanstack/react-query, react-native-safe-area-context, AsyncStorage).
+- **Backend**: FastAPI + Motor (async MongoDB) on `/api/*`.
+- **Auth**: PIN → JWT (HS256). Default PIN `1926` (configurable via `/api/admin/change-pin`).
+- **Realtime**: WebSocket `/api/ws` broadcasts `match_updated`, `player_updated`, `pairings_changed`, `rounds_changed`, `settings_changed`. Client invalidates React Query cache on any message.
+- **Storage**: Emergent Managed Object Storage for player photos (`/api/photos` admin, `/api/photos-self` public self-upload).
+
+## Navigation
+### First launch
+- `/pick-player` — all 12 players grouped by team; tap your name to save to AsyncStorage (`swifty.me.player_id`).
+
+### Tabs (4)
+1. **Rounds** — home. Lists 3 round cards (format, venue, date, status pill `UPCOMING` / `LIVE` / `COMPLETE`, per-round NZ/World points, x/y matches). Tap a card → the match-scoring screen for that round (R1/R2/R3 reused as stack routes).
+2. **Leaderboard** — total scores for both teams, round-by-round breakdown, overall leader / cup winner message.
+3. **Pairings** — read-only view of all matches by round for the public; after admin PIN, slots become editable with duplicate warnings, confirmation dialog if a touched match has a result, sticky Save bar.
+4. **Bio** — the signed-in player's own profile: avatar, upload / replace / remove photo, editable bio, `Switch player` link. Admin edits anyone via 3-dot menu → *Admin: All Bios*.
 
 ## Data Model (MongoDB)
-- `players`: `{ id, team: "NZ"|"WORLD", name, bio, photo_path, order }`
-- `matches`: `{ id, round: 1|2|3, index, nz_player_ids[], world_player_ids[], live_status, result: "NZ_WIN"|"HALVED"|"WORLD_WIN"|null, updated_at }`
+- `players`: `{ id, team: NZ|WORLD, name, bio, photo_path, order }`
+- `matches`: `{ id, round: 1|2|3, index, nz_player_ids[], world_player_ids[], live_status, result: NZ_WIN|HALVED|WORLD_WIN|null, updated_at }`
+- `rounds`: `{ round, format, venue, date }` (status computed from matches)
 - `settings`: `{ tournament_name, year, nz_team_name, world_team_name }`
 - `config`: `{ _id: "admin", pin }` (optional override)
 
-Seeded on first boot: 6 placeholder NZ players, 6 World, 3+3+6 = 12 matches.
-
-## Rounds
-- **R1 Alternate Shot** — 3 matches, 2v2
-- **R2 Best Ball** — 3 matches, 2v2
-- **R3 Heads Up** — 6 matches, 1v1
-- Points: WIN=1, HALVED=0.5 each, LOSS=0. Cup winner declared only when all 12 matches have a result.
+Seed on first boot: 6 NZ + 6 World placeholder players, 3+3+6 = 12 matches, 3 round docs.
 
 ## Public API (no auth)
-- `GET /api/state` — full snapshot (settings + players + matches + leaderboard)
-- `GET /api/players` / `GET /api/matches` / `GET /api/leaderboard` / `GET /api/settings`
-- `PATCH /api/matches/{id}` body: `{ live_status?, result? }`
+- `GET /api/state` — snapshot (settings, players, matches, rounds, leaderboard)
+- `GET /api/rounds` / `/api/players` / `/api/matches` / `/api/leaderboard` / `/api/settings`
+- `PATCH /api/matches/{id}` body `{ live_status?, result? }`
+- `PATCH /api/players/{id}/self` body `{ player_id, bio?, photo_path? }` — the on-device player updating their OWN profile
+- `POST /api/photos-self` multipart `player_id` + `file`
 - `WS /api/ws`
 
 ## Admin API (Bearer JWT)
 - `POST /api/admin/login` body `{ pin }` → `{ token }`
 - `PATCH /api/players/{id}` body `{ name?, bio?, photo_path? }`
-- `POST /api/photos` multipart `player_id` + `file`
+- `POST /api/photos` multipart (admin upload)
 - `PATCH /api/pairings/{round}` body `{ matches: [{ id, nz_player_ids, world_player_ids }] }`
+- `PATCH /api/rounds/{round}` body `{ format?, venue?, date? }`
 - `PATCH /api/settings` body partial Settings
 - `POST /api/admin/change-pin` body `{ new_pin }`
 
-## Screens
-- **Teams** (`/teams`) — hero banner + scoreboard + NZ/World segmented list of player cards
-- **R1 / R2 / R3** — match cards with 2 or 1 players per side, VS divider, tap-to-edit live status, three big result buttons (🇳🇿 WIN / HALVED / 🌍 WIN)
-- **Admin: Bios** — list players, bottom sheet to edit name/bio, upload/replace/remove photo
-- **Admin: Pairings** — round segmented control, slots with dropdown picker, duplicate warning (red border), confirmation dialog if a touched match already has a result, sticky Save bar
+## Scoring
+WIN = 1 pt, HALVED = 0.5 pt each, LOSS = 0. Cup winner declared only after all 12 match results are entered.
 
 ## PWA / Installation
-- `app.json` configured with proper name, dark `userInterfaceStyle`, `#07111f` theme, iOS photo-usage descriptions, Android permissions.
-- Web preview is installable to iPhone home screen via Safari → Share → Add to Home Screen.
+`app.json` configured with dark `userInterfaceStyle`, `#07111f` theme, iOS photo-usage descriptions, Android permissions. Web preview installable to iPhone home screen via Safari → Share → Add to Home Screen.
 
 ## Admin PIN
-- Default **1926**; change via `/api/admin/change-pin` (see test_credentials.md).
-
-## Known Tradeoffs
-- Admin role is PIN-based (per user request) rather than full email/password Supabase Auth.
-- Photos are stored via Emergent Object Storage; the backend proxies reads at `/api/photos/{path}` so the key never ships in the app.
+Default **1926**; see `/app/memory/test_credentials.md`.

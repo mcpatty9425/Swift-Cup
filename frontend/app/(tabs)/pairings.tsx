@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Header, Scoreboard } from "@/src/components/chrome";
 import { Match, Player, useAppState, useUpdatePairings } from "@/src/api";
 import { Avatar } from "@/src/avatar";
+import { useAuth } from "@/src/auth";
 import { colors, radius, spacing } from "@/src/theme";
 
 type Local = {
@@ -25,6 +26,7 @@ type Local = {
 
 export default function PairingsScreen() {
   const insets = useSafeAreaInsets();
+  const { isAdmin } = useAuth();
   const { data, isLoading } = useAppState();
   const [round, setRound] = useState<1 | 2 | 3>(1);
   const [local, setLocal] = useState<Local[]>([]);
@@ -115,8 +117,10 @@ export default function PairingsScreen() {
         <Scoreboard />
 
         <View style={styles.sectionHead}>
-          <Text style={styles.title}>Admin · Pairings</Text>
-          <Text style={styles.sub}>Assign players to matches. Scores stay safe.</Text>
+          <Text style={styles.title}>Pairings</Text>
+          <Text style={styles.sub}>
+            {isAdmin ? "Admin · Assign players to matches. Scores stay safe." : "View matchups by round. Only the organiser can edit."}
+          </Text>
         </View>
 
         <View style={styles.segment}>
@@ -160,13 +164,14 @@ export default function PairingsScreen() {
                         <Pressable
                           key={idx}
                           testID={`slot-nz-${m.id}-${idx}`}
-                          onPress={() => setPicker({ matchId: m.id, team: "NZ", slot: idx })}
-                          style={[styles.slot, dup && { borderColor: colors.error }]}
+                          onPress={() => isAdmin && setPicker({ matchId: m.id, team: "NZ", slot: idx })}
+                          disabled={!isAdmin}
+                          style={[styles.slot, dup && { borderColor: colors.error }, !isAdmin && { opacity: 0.9 }]}
                         >
                           <Text style={styles.slotText} numberOfLines={1}>
-                            {p?.name || "Select…"}
+                            {p?.name || (isAdmin ? "Select…" : "TBD")}
                           </Text>
-                          <Ionicons name="chevron-down" size={14} color={colors.muted} />
+                          {isAdmin ? <Ionicons name="chevron-down" size={14} color={colors.muted} /> : null}
                         </Pressable>
                       );
                     })}
@@ -183,13 +188,14 @@ export default function PairingsScreen() {
                         <Pressable
                           key={idx}
                           testID={`slot-world-${m.id}-${idx}`}
-                          onPress={() => setPicker({ matchId: m.id, team: "WORLD", slot: idx })}
-                          style={[styles.slot, dup && { borderColor: colors.error }]}
+                          onPress={() => isAdmin && setPicker({ matchId: m.id, team: "WORLD", slot: idx })}
+                          disabled={!isAdmin}
+                          style={[styles.slot, dup && { borderColor: colors.error }, !isAdmin && { opacity: 0.9 }]}
                         >
                           <Text style={styles.slotText} numberOfLines={1}>
-                            {p?.name || "Select…"}
+                            {p?.name || (isAdmin ? "Select…" : "TBD")}
                           </Text>
-                          <Ionicons name="chevron-down" size={14} color={colors.muted} />
+                          {isAdmin ? <Ionicons name="chevron-down" size={14} color={colors.muted} /> : null}
                         </Pressable>
                       );
                     })}
@@ -201,8 +207,9 @@ export default function PairingsScreen() {
         )}
       </ScrollView>
 
-      {/* Sticky Save Bar */}
-      <View style={[styles.saveBar, { paddingBottom: insets.bottom + 8 }]}>
+      {/* Sticky Save Bar (admin only) */}
+      {isAdmin ? (
+        <View style={[styles.saveBar, { paddingBottom: insets.bottom + 8 }]}>
         {err ? <Text style={styles.err}>{err}</Text> : null}
         {saved && !dirty ? <Text style={styles.ok}>Saved ✓</Text> : null}
         <Pressable
@@ -218,6 +225,7 @@ export default function PairingsScreen() {
           )}
         </Pressable>
       </View>
+      ) : null}
 
       {/* Player Picker */}
       <Modal visible={!!picker} transparent animationType="slide" onRequestClose={() => setPicker(null)}>

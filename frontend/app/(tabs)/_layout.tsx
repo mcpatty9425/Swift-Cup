@@ -1,17 +1,14 @@
 import Ionicons from "@react-native-vector-icons/ionicons";
 import { Tabs } from "expo-router";
 import React from "react";
-import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
-import { useAuth } from "@/src/auth";
-import { colors, spacing } from "@/src/theme";
+import { Platform, StyleSheet } from "react-native";
+import { colors } from "@/src/theme";
 
 function TabIcon({ name, color, focused }: { name: any; color: string; focused: boolean }) {
   return <Ionicons name={name} size={focused ? 26 : 22} color={color} />;
 }
 
 export default function TabsLayout() {
-  const { isAdmin } = useAuth();
-
   return (
     <Tabs
       screenOptions={{
@@ -28,50 +25,23 @@ export default function TabsLayout() {
         tabBarLabelStyle: { fontSize: 11, fontWeight: "700", letterSpacing: 0.5 },
       }}
     >
+      <Tabs.Screen name="rounds" options={{ title: "Rounds", tabBarIcon: (p) => <TabIcon name="golf" {...p} /> }} />
       <Tabs.Screen
-        name="teams"
-        options={{
-          title: "Teams",
-          tabBarIcon: (p) => <TabIcon name="people" {...p} />,
-        }}
-      />
-      <Tabs.Screen
-        name="r1"
-        options={{
-          title: "R1",
-          tabBarIcon: (p) => <TabIcon name="golf" {...p} />,
-        }}
-      />
-      <Tabs.Screen
-        name="r2"
-        options={{
-          title: "R2",
-          tabBarIcon: (p) => <TabIcon name="flag" {...p} />,
-        }}
-      />
-      <Tabs.Screen
-        name="r3"
-        options={{
-          title: "R3",
-          tabBarIcon: (p) => <TabIcon name="trophy" {...p} />,
-        }}
-      />
-      <Tabs.Screen
-        name="bios"
-        options={{
-          title: "Bios",
-          href: isAdmin ? "/bios" : null,
-          tabBarIcon: (p) => <TabIcon name="person-circle" {...p} />,
-        }}
+        name="leaderboard"
+        options={{ title: "Leaderboard", tabBarIcon: (p) => <TabIcon name="trophy" {...p} /> }}
       />
       <Tabs.Screen
         name="pairings"
-        options={{
-          title: "Pairings",
-          href: isAdmin ? "/pairings" : null,
-          tabBarIcon: (p) => <TabIcon name="git-merge" {...p} />,
-        }}
+        options={{ title: "Pairings", tabBarIcon: (p) => <TabIcon name="people" {...p} /> }}
       />
+      <Tabs.Screen name="bio" options={{ title: "Bio", tabBarIcon: (p) => <TabIcon name="person-circle" {...p} /> }} />
+
+      {/* Hidden routes still routable: */}
+      <Tabs.Screen name="teams" options={{ href: null }} />
+      <Tabs.Screen name="r1" options={{ href: null }} />
+      <Tabs.Screen name="r2" options={{ href: null }} />
+      <Tabs.Screen name="r3" options={{ href: null }} />
+      <Tabs.Screen name="bios" options={{ href: null }} />
     </Tabs>
   );
 }
