@@ -1,4 +1,5 @@
 import { Image } from "expo-image";
+import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
 import React from "react";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
@@ -6,11 +7,10 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAppState } from "@/src/api";
 import { usePlayer } from "@/src/player-context";
 
-// Stylistic one-off: light cream + forest-green card (Ryder Cup / Masters feel).
-// These colors are intentional literals, independent of the dark app theme.
+// Stylistic one-off home: cream + navy (Ryder Cup / Masters feel).
 const CREAM = "#f1ede1";
-const FOREST = "#0b4a34";
-const FOREST_SOFT = "#4a6a5a";
+const FOREST = "#0b1f3a";
+const FOREST_SOFT = "#4a5b78";
 const CARD = "#ffffff";
 const SELECTED = "#f4ea9c";
 
@@ -26,8 +26,10 @@ export default function PickPlayerScreen() {
   }
 
   const players = data?.players ?? [];
-  const nz = players.filter((p) => p.team === "NZ");
-  const world = players.filter((p) => p.team === "WORLD");
+  const byName = (a: any, b: any) =>
+    displayName(a.name).toLowerCase().localeCompare(displayName(b.name).toLowerCase());
+  const nz = players.filter((p) => p.team === "NZ").slice().sort(byName);
+  const world = players.filter((p) => p.team === "WORLD").slice().sort(byName);
   // Pair rows side by side; pad short side with nulls
   const rows = Math.max(nz.length, world.length);
   const pairs: { world: any; nz: any }[] = [];
@@ -35,6 +37,7 @@ export default function PickPlayerScreen() {
 
   return (
     <View style={[styles.root, { paddingTop: insets.top }]}>
+      <StatusBar style="dark" />
       <ScrollView
         contentContainerStyle={{ paddingBottom: insets.bottom + 32, paddingTop: 20 }}
         testID="pick-player-screen"

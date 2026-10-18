@@ -89,6 +89,7 @@ class Player(BaseModel):
     team: TeamT
     name: str
     bio: str = ""
+    handicap: str = ""
     photo_path: Optional[str] = None  # storage path
     order: int = 0
 
@@ -96,6 +97,7 @@ class Player(BaseModel):
 class PlayerUpdate(BaseModel):
     name: Optional[str] = None
     bio: Optional[str] = None
+    handicap: Optional[str] = None
     photo_path: Optional[str] = None  # pass "" to clear
 
 
@@ -151,6 +153,7 @@ class RoundUpdate(BaseModel):
 class SelfPlayerUpdate(BaseModel):
     player_id: str
     bio: Optional[str] = None
+    handicap: Optional[str] = None
     photo_path: Optional[str] = None  # "" to clear
 
 
@@ -350,6 +353,16 @@ async def seed_if_empty() -> None:
 async def on_startup() -> None:
     try:
         await seed_if_empty()
+        # Apply real venues/dates where still placeholders
+        real = {
+            1: ("Tairua", "Thursday 5th Nov"),
+            2: ("Mercury Bay", "Friday 6th Nov"),
+            3: ("The Dunes Matarangi", "Saturday 7th Nov"),
+        }
+        await db.players.update_many({"handicap": {"$exists": False}}, {"$set": {"handicap": ""}})
+        for rnd, (venue, date) in real.items():
+            await db.rounds.update_one({"round": rnd, "venue": "Course TBD"}, {"$set": {"venue": venue}})
+            await db.rounds.update_one({"round": rnd, "date": "Date TBD"}, {"$set": {"date": date}})
     except Exception as exc:
         log.exception("Seed failed: %s", exc)
     # Init storage lazily on first upload; don't fail boot if key missing
@@ -662,6 +675,8 @@ async def self_update_player(player_id: str, update: SelfPlayerUpdate) -> dict:
     patch: dict = {}
     if update.bio is not None:
         patch["bio"] = update.bio
+    if update.handicap is not None:
+        patch["handicap"] = update.handicap
     if update.photo_path is not None:
         patch["photo_path"] = update.photo_path or None
     if not patch:

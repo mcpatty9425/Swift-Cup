@@ -1,7 +1,6 @@
 // Shared header + leaderboard components for every public screen.
 import Ionicons from "@react-native-vector-icons/ionicons";
 import { Image } from "expo-image";
-import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -53,18 +52,16 @@ export function Header({ title, showAdminMenu = true }: { title?: string; showAd
   }
 
   return (
-    <View style={[styles.headerWrap, { paddingTop: insets.top }]}>
-      <Image
-        source={require("../../assets/images/banner.png")}
-        style={styles.banner}
-        contentFit="cover"
-      />
-      <LinearGradient
-        colors={["transparent", "rgba(7,17,31,0.75)", "rgba(7,17,31,0.98)"]}
-        style={styles.bannerFade}
-        pointerEvents="none"
-      />
-      <View style={styles.topBar}>
+    <View style={styles.headerWrap}>
+      <View style={[styles.bannerBox, { paddingTop: insets.top }]}>
+        <Image
+          source={require("../../assets/images/banner.png")}
+          style={styles.banner}
+          contentFit="cover"
+          contentPosition="center"
+        />
+      </View>
+      <View style={[styles.topBar, { top: insets.top }]}>
         <LiveDot />
         <View style={{ flex: 1 }} />
         {showAdminMenu ? (
@@ -74,7 +71,7 @@ export function Header({ title, showAdminMenu = true }: { title?: string; showAd
             style={styles.menuBtn}
             hitSlop={10}
           >
-            <Ionicons name="ellipsis-vertical" size={22} color={colors.onSurface} />
+            <Ionicons name="ellipsis-vertical" size={22} color={colors.onBrand} />
           </Pressable>
         ) : null}
       </View>
@@ -215,25 +212,20 @@ export function Scoreboard({ compact = false }: { compact?: boolean }) {
 
 const styles = StyleSheet.create({
   headerWrap: {
-    position: "relative",
     backgroundColor: colors.background,
-    paddingBottom: spacing.md,
+    paddingBottom: spacing.xs,
+  },
+  bannerBox: {
+    backgroundColor: colors.brand,
   },
   banner: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 220,
-  },
-  bannerFade: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 220,
+    width: "100%",
+    height: 200,
   },
   topBar: {
+    position: "absolute",
+    left: 0,
+    right: 0,
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: spacing.lg,
@@ -246,10 +238,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: radius.pill,
-    backgroundColor: "rgba(255,255,255,0.08)",
+    backgroundColor: "rgba(11,31,58,0.75)",
   },
   pageTitle: {
-    marginTop: 90,
+    marginTop: spacing.md,
     marginHorizontal: spacing.lg,
     color: colors.onSurface,
     fontSize: 32,
@@ -260,13 +252,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    backgroundColor: "rgba(7,17,31,0.65)",
+    backgroundColor: "rgba(11,31,58,0.75)",
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: radius.pill,
   },
   liveDot: { width: 8, height: 8, borderRadius: 4 },
-  liveText: { color: colors.onSurface, fontSize: 11, fontWeight: "800", letterSpacing: 1 },
+  liveText: { color: colors.onBrand, fontSize: 11, fontWeight: "800", letterSpacing: 1 },
 
   menuBackdrop: {
     flex: 1,

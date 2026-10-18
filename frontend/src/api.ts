@@ -13,6 +13,7 @@ export type Player = {
   team: "NZ" | "WORLD";
   name: string;
   bio: string;
+  handicap?: string;
   photo_path: string | null;
   order: number;
 };
@@ -139,9 +140,10 @@ export function useUpdateMatch() {
 export function useUpdatePlayer() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (p: { id: string; name?: string; bio?: string; photo_path?: string | null }) => {
+    mutationFn: async (p: { id: string; name?: string; bio?: string; handicap?: string; photo_path?: string | null }) => {
       const body: Record<string, unknown> = {};
       if (p.name !== undefined) body.name = p.name;
+      if (p.handicap !== undefined) body.handicap = p.handicap;
       if (p.bio !== undefined) body.bio = p.bio;
       if (p.photo_path !== undefined) body.photo_path = p.photo_path ?? "";
       return api<Player>(`/api/players/${p.id}`, { method: "PATCH", body: JSON.stringify(body) }, true);

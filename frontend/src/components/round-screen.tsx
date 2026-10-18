@@ -24,11 +24,11 @@ export default function RoundScreen({ round, title, format }: { round: 1 | 2 | 3
         <Text style={styles.hRound}>{title}</Text>
         <Text style={styles.hFormat}>{format}</Text>
         <View style={styles.hPoints}>
-          <View style={[styles.pBadge, { backgroundColor: "#1a3350" }]}>
+          <View style={[styles.pBadge, { backgroundColor: "rgba(30,58,138,0.1)" }]}>
             <Text style={styles.pBadgeLabel}>🇳🇿 NZ</Text>
             <Text style={styles.pBadgeVal}>{lb?.nz ?? 0}</Text>
           </View>
-          <View style={[styles.pBadge, { backgroundColor: "#3a2418" }]}>
+          <View style={[styles.pBadge, { backgroundColor: "rgba(192,90,42,0.1)" }]}>
             <Text style={styles.pBadgeLabel}>🌍 WORLD</Text>
             <Text style={styles.pBadgeVal}>{lb?.world ?? 0}</Text>
           </View>

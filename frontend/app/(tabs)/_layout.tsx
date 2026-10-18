@@ -13,10 +13,10 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.gold,
+        tabBarActiveTintColor: colors.brand,
         tabBarInactiveTintColor: colors.muted,
         tabBarStyle: {
-          backgroundColor: "#07111fF2",
+          backgroundColor: colors.surface,
           borderTopColor: colors.border,
           borderTopWidth: StyleSheet.hairlineWidth,
           ...(Platform.OS === "web" ? { height: 64 } : {}),
@@ -34,7 +34,11 @@ export default function TabsLayout() {
         name="pairings"
         options={{ title: "Pairings", tabBarIcon: (p) => <TabIcon name="people" {...p} /> }}
       />
-      <Tabs.Screen name="bio" options={{ title: "Bio", tabBarIcon: (p) => <TabIcon name="person-circle" {...p} /> }} />
+      <Tabs.Screen
+        name="players"
+        options={{ title: "Players", tabBarIcon: (p) => <TabIcon name="person-circle" {...p} /> }}
+      />
+      <Tabs.Screen name="bio" options={{ title: "Bio", tabBarIcon: (p) => <TabIcon name="create" {...p} /> }} />
 
       {/* Hidden routes still routable: */}
       <Tabs.Screen name="teams" options={{ href: null }} />

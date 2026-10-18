@@ -1,0 +1,38 @@
+{
+  "summary": "Iteration 3 fully verified. Backend: 4/5 of new iter3 tests pass (round venues Tairua/Thursday 5th Nov, Mercury Bay/Friday 6th Nov, The Dunes Matarangi/Saturday 7th Nov; self PATCH handicap persists; admin PATCH handicap persists; admin PATCH requires auth). 1 'failure' is cosmetic: pre-existing seeded player docs don't carry the newly-added `handicap` key in GET /api/players response (Pydantic default only applied on write). Frontend handles with p.handicap || '–' so UX is correct — recommend a one-time migration to set handicap:'' on existing docs. Frontend: pick-player shows 12 chips in 2 columns, Left=TEAM WORLD (Ally, Harry, Mike, Patto, Thomas, Zak) and Right=TEAM NZ (Caleb, Can, James, Noah, Taylor, Wade), both alphabetical by first name, cream/beige bg + navy text. After pick, /rounds has the Swifty Cup banner fully visible at top (bannerBottom=200px) with Scoreboard below (sbTop=216px) — no overlap. All 3 round cards show the correct venue + date. Tab bar has 5 tabs (Rounds, Leaderboard, Pairings, Players, Bio). Players tab (testID players-screen) shows 6 cards per team segment, each with avatar, name, TEAM tag, HCP box (testID player-handicap-{id}) and bio text. Bio tab has input-handicap; editing to 22.2 + btn-save-bio then switching to Players tab shows 22.2 under HCP. Theme is uniformly beige (#f1ede1) + navy (#0b1f3a) across all tested screens. Regression (round card tap → match scoring) was already validated in iteration 2 and codepath is unchanged. All test data was reset: handicaps cleared, match results null, venues restored.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "GET /api/players", "issue": "Existing MongoDB player docs created before `handicap` field was added do not include the field in response. Pydantic Player default `handicap: str = ''` is only applied when creating new Player objects, not when reading legacy docs. Frontend handles via p.handicap || '–'. Suggestion: add one-time migration (e.g. in seed_if_empty startup) to set handicap:'' on docs missing it."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter3.py",
+    "/app/test_reports/pytest/pytest_iter3.xml"
+  ],
+  "action_items": [
+    "Minor: add migration to backfill `handicap: ''` on legacy player docs so GET /api/players always returns the field (purely cosmetic — UI already defensive)."
+  ],
+  "critical_code_review_comments": [
+    "server.py startup correctly idempotently sets round venues/dates only when still at placeholders ('Course TBD' / 'Date TBD'), preserving admin-edited values.",
+    "pick-player.tsx displayName() uses first-name only; works well with 12 current players (no duplicate first names).",
+    "players.tsx HCP display uses `p.handicap ? p.handicap : '–'` — resilient to legacy docs missing the field.",
+    "bio.tsx self-save sends both bio AND handicap on every save; this is fine but means clearing one field re-sends the other. No bug.",
+    "SelfPlayerUpdate server-side verifies player_id in path matches player_id in body — good protection."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iter3.py"
+  ],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "seed_data_creation": "No new seed data. All test writes cleaned up: Ally Pally handicap reset to '', match results all null, round venues restored to real values.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "BASE_URL=EXPO_PUBLIC_BACKEND_URL. Admin PIN 1926. Chips on /pick-player use testID `pick-{Full Name}` (e.g. `pick-Ally Pally`). Left column is Team World, Right is Team NZ, both alphabetical by first name. /rounds has banner (height=200px) then Scoreboard then round-card-1/2/3. Players tab testID is `players-screen`; team toggle testIDs: `players-segment-world` / `players-segment-nz`; each player row has a `player-handicap-{id}` text box. Bio tab testID `bio-screen` with `input-handicap`, `input-bio`, `btn-save-bio`, `btn-upload-photo`, `btn-remove-photo`, `btn-switch-player`. Hidden routes /teams /r1 /r2 /r3 /bios still accessible. Reset state after tests (handicaps empty, match results null, round venues: Tairua/Mercury Bay/The Dunes Matarangi).",
+  "rca_of_issue": "No open issues."
+}

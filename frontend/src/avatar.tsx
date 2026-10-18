@@ -24,7 +24,7 @@ export function Avatar({
 }) {
   const url = photoUrl(photoPath);
   const ring = team === "NZ" ? colors.nz : team === "WORLD" ? colors.world : colors.border;
-  const bg = team === "NZ" ? "#1a3350" : team === "WORLD" ? "#3a2418" : colors.surfaceSecondary;
+  const bg = team === "NZ" ? "#dbe3f3" : team === "WORLD" ? "#f5e1d6" : colors.surfaceTertiary;
   if (url) {
     return (
       <Image

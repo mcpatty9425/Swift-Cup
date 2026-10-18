@@ -1,79 +1,75 @@
-// Design tokens for The Swifty Cup 2026 (dark-first, premium golf aesthetic).
+// Beige + Navy palette (Ryder Cup / Masters feel).
 import { useMemo } from "react";
 import { Appearance, StyleSheet, useColorScheme } from "react-native";
 
 export type ColorScheme = "light" | "dark";
 
-const dark = {
+const palette = {
   // Surfaces
-  surface: "#0e1a2b",
-  onSurface: "#f7fafc",
-  surfaceSecondary: "#14243a",
-  onSurfaceSecondary: "#f7fafc",
-  surfaceTertiary: "#1d334f",
-  onSurfaceTertiary: "#f7fafc",
-  surfaceInverse: "#f7fafc",
-  onSurfaceInverse: "#0e1a2b",
-  muted: "#9fb0c7",
+  surface: "#ffffff",
+  onSurface: "#0b1f3a",
+  surfaceSecondary: "#ffffff",
+  onSurfaceSecondary: "#0b1f3a",
+  surfaceTertiary: "#e8e2cf",
+  onSurfaceTertiary: "#0b1f3a",
+  surfaceInverse: "#0b1f3a",
+  onSurfaceInverse: "#f1ede1",
+  muted: "#6b7a90",
 
-  // Brand (gold + team accents)
-  brand: "#f7c948",
-  onBrand: "#0e1a2b",
-  brandPrimary: "#4fb3ff", // NZ blue
-  onBrandPrimary: "#07111f",
-  brandSecondary: "#ff8c5a", // World orange
-  onBrandSecondary: "#07111f",
-  brandTertiary: "#f7c948", // Gold
-  onBrandTertiary: "#07111f",
+  // Brand = navy
+  brand: "#0b1f3a",
+  onBrand: "#ffffff",
+  brandPrimary: "#1e3a8a", // NZ deeper blue
+  onBrandPrimary: "#ffffff",
+  brandSecondary: "#c05a2a", // World burnt orange
+  onBrandSecondary: "#ffffff",
+  brandTertiary: "#c4941f", // Muted gold
+  onBrandTertiary: "#0b1f3a",
 
   // Status
-  success: "#5dd39e",
-  onSuccess: "#07111f",
-  warning: "#f7c948",
-  onWarning: "#07111f",
-  error: "#ff6b6b",
-  onError: "#07111f",
-  info: "#4fb3ff",
-  onInfo: "#07111f",
+  success: "#0e8a5c",
+  onSuccess: "#ffffff",
+  warning: "#c4941f",
+  onWarning: "#0b1f3a",
+  error: "#c23b3b",
+  onError: "#ffffff",
+  info: "#1e3a8a",
+  onInfo: "#ffffff",
 
   // Lines
-  border: "#1d334f",
-  borderStrong: "#2a4365",
-  divider: "#1d334f",
+  border: "#dcd6c3",
+  borderStrong: "#c7bfa8",
+  divider: "#dcd6c3",
 
   // Extras
-  background: "#07111f",
-  nz: "#4fb3ff",
-  world: "#ff8c5a",
-  gold: "#f7c948",
+  background: "#f1ede1",
+  nz: "#1e3a8a",
+  world: "#c05a2a",
+  gold: "#c4941f",
 };
 
-export type ThemeColors = typeof dark;
+export type ThemeColors = typeof palette;
 
-export const defaultScheme = "dark" satisfies ColorScheme;
-
-export const themes: { light?: ThemeColors; dark: ThemeColors } = { dark };
+export const defaultScheme = "light" satisfies ColorScheme;
+export const themes = { light: palette } as { light: ThemeColors; dark?: ThemeColors };
 
 export function setColorScheme(scheme: ColorScheme | null) {
   Appearance.setColorScheme?.(scheme ?? "unspecified");
 }
-
-setColorScheme?.(themes.light ? null : defaultScheme);
+setColorScheme?.("light");
 
 export function useTheme(): { scheme: ColorScheme; colors: ThemeColors } {
   const system = useColorScheme();
-  const scheme: ColorScheme = system === "light" && themes.light ? "light" : "dark";
-  return { scheme, colors: themes.dark };
+  return { scheme: "light", colors: palette };
 }
 
-export const colors = themes.dark;
+export const colors = palette;
 
 export function makeStyles<T extends StyleSheet.NamedStyles<T> | StyleSheet.NamedStyles<any>>(
   factory: (colors: ThemeColors) => T & StyleSheet.NamedStyles<any>,
 ): () => T {
   return function useStyles(): T {
-    const { colors } = useTheme();
-    return useMemo(() => StyleSheet.create(factory(colors)), [colors]);
+    return useMemo(() => StyleSheet.create(factory(palette)), []);
   };
 }
 

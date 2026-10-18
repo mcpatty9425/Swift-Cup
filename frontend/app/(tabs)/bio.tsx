@@ -32,13 +32,17 @@ export default function BioScreen() {
   const me = (data?.players ?? []).find((p) => p.id === playerId) || null;
 
   const [bio, setBio] = useState("");
+  const [handicap, setHandicap] = useState("");
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState<number | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
-    if (me) setBio(me.bio || "");
-  }, [me?.id, me?.bio]);
+    if (me) {
+      setBio(me.bio || "");
+      setHandicap(me.handicap || "");
+    }
+  }, [me?.id, me?.bio, me?.handicap]);
 
   async function save() {
     if (!me) return;
@@ -48,7 +52,7 @@ export default function BioScreen() {
       const r = await fetch(`${API_URL}/api/players/${me.id}/self`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ player_id: me.id, bio }),
+        body: JSON.stringify({ player_id: me.id, bio, handicap }),
       });
       if (!r.ok) {
         const j = await r.json().catch(() => ({}));
@@ -164,6 +168,17 @@ export default function BioScreen() {
                 </Pressable>
               ) : null}
             </View>
+
+            <Text style={styles.label}>Handicap</Text>
+            <TextInput
+              testID="input-handicap"
+              value={handicap}
+              onChangeText={setHandicap}
+              placeholder="e.g. 12.4"
+              placeholderTextColor={colors.muted}
+              style={[styles.input, { minHeight: 0 }]}
+              keyboardType="numbers-and-punctuation"
+            />
 
             <Text style={styles.label}>Your Bio</Text>
             <TextInput

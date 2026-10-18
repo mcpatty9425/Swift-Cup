@@ -81,6 +81,7 @@ function EditPlayerSheet({ player, onClose }: { player: Player | null; onClose: 
   const update = useUpdatePlayer();
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
+  const [handicap, setHandicap] = useState("");
   const [busy, setBusy] = useState(false);
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -89,6 +90,7 @@ function EditPlayerSheet({ player, onClose }: { player: Player | null; onClose: 
     if (player) {
       setName(player.name);
       setBio(player.bio);
+      setHandicap(player.handicap || "");
       setSavedAt(null);
       setError(null);
     }
@@ -100,7 +102,7 @@ function EditPlayerSheet({ player, onClose }: { player: Player | null; onClose: 
     setBusy(true);
     setError(null);
     try {
-      await update.mutateAsync({ id: player!.id, name, bio });
+      await update.mutateAsync({ id: player!.id, name, bio, handicap });
       setSavedAt(Date.now());
     } catch (e: any) {
       setError(e?.message || "Save failed");
@@ -205,6 +207,17 @@ function EditPlayerSheet({ player, onClose }: { player: Player | null; onClose: 
             style={styles.input}
             placeholder="Player name"
             placeholderTextColor={colors.muted}
+          />
+
+          <Text style={styles.label}>Handicap</Text>
+          <TextInput
+            testID="input-handicap"
+            value={handicap}
+            onChangeText={setHandicap}
+            style={styles.input}
+            placeholder="e.g. 12.4"
+            placeholderTextColor={colors.muted}
+            keyboardType="numbers-and-punctuation"
           />
 
           <Text style={styles.label}>Bio</Text>

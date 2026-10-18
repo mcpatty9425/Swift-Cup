@@ -54,3 +54,9 @@ WIN = 1 pt, HALVED = 0.5 pt each, LOSS = 0. Cup winner declared only after all 1
 
 ## Admin PIN
 Default **1926**; see `/app/memory/test_credentials.md`.
+
+## Iteration 3 (Jun 2026)
+- Beige (#f1ede1) + navy (#0b1f3a) theme on every screen; banner fully visible at top, scoreboard sits below it
+- Pick-player names sorted alphabetically (World left, NZ right)
+- Venues: R1 Tairua (Thu 5 Nov), R2 Mercury Bay (Fri 6 Nov), R3 The Dunes Matarangi (Sat 7 Nov)
+- New Players tab (photo, name, team, handicap, bio); handicap editable in Bio + admin All Bios

@@ -98,8 +98,8 @@ function pillText(s: string) {
   return colors.muted;
 }
 function pillStyle(s: string) {
-  if (s === "LIVE") return { backgroundColor: "rgba(93,211,158,0.12)", borderColor: colors.success };
-  if (s === "COMPLETE") return { backgroundColor: "rgba(247,201,72,0.12)", borderColor: colors.gold };
+  if (s === "LIVE") return { backgroundColor: "rgba(14,138,92,0.1)", borderColor: colors.success };
+  if (s === "COMPLETE") return { backgroundColor: "rgba(196,148,31,0.12)", borderColor: colors.gold };
   return { backgroundColor: colors.surfaceTertiary, borderColor: colors.border };
 }
 function statusBorder(s: string) {
