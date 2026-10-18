@@ -1,5 +1,5 @@
-import { Image } from "expo-image";
 import { StatusBar } from "expo-status-bar";
+import { SwiftyBanner } from "@/src/components/swifty-banner";
 import { useRouter } from "expo-router";
 import React from "react";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
@@ -36,24 +36,14 @@ export default function PickPlayerScreen() {
   for (let i = 0; i < rows; i++) pairs.push({ world: world[i] ?? null, nz: nz[i] ?? null });
 
   return (
-    <View style={[styles.root, { paddingTop: insets.top }]}>
-      <StatusBar style="dark" />
+    <View style={styles.root}>
+      <StatusBar style="light" />
+      <SwiftyBanner topInset={insets.top} />
       <ScrollView
-        contentContainerStyle={{ paddingBottom: insets.bottom + 32, paddingTop: 20 }}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 32, paddingTop: 4 }}
         testID="pick-player-screen"
       >
-        <View style={styles.heroBadge}>
-          <Image
-            source={require("../assets/images/banner.png")}
-            style={styles.heroImg}
-            contentFit="cover"
-          />
-        </View>
-
         <Text style={styles.tagline}>RYDER CUP STYLE</Text>
-        <Text style={styles.title}>The Swifty Cup</Text>
-        <Text style={styles.titleItalic}>2026</Text>
-        <View style={styles.titleRule} />
         <Text style={styles.meta}>3 ROUNDS  •  2 TEAMS  •  1 WINNER</Text>
 
         <Text style={styles.selectKicker}>SELECT YOUR NAME</Text>

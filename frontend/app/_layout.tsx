@@ -6,6 +6,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
+import { useFonts } from "expo-font";
 
 import { ErrorBoundary } from "@/src/components/error-boundary";
 import { AuthProvider } from "@/src/auth";
@@ -41,6 +42,11 @@ function Gate({ children }: { children: React.ReactNode }) {
 }
 
 export default function RootLayout() {
+  const [fontsLoaded] = useFonts({
+    "BebasNeue-Regular": require("../assets/fonts/BebasNeue-Regular.ttf"),
+    "IBMPlexMono-SemiBold": require("../assets/fonts/IBMPlexMono-SemiBold.ttf"),
+  });
+  if (!fontsLoaded) return <View style={styles.root} />;
   return (
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider>

@@ -1,6 +1,7 @@
 // Shared header + leaderboard components for every public screen.
 import Ionicons from "@react-native-vector-icons/ionicons";
 import { Image } from "expo-image";
+import { SwiftyBanner } from "@/src/components/swifty-banner";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -53,14 +54,7 @@ export function Header({ title, showAdminMenu = true }: { title?: string; showAd
 
   return (
     <View style={styles.headerWrap}>
-      <View style={[styles.bannerBox, { paddingTop: insets.top }]}>
-        <Image
-          source={require("../../assets/images/banner.png")}
-          style={styles.banner}
-          contentFit="cover"
-          contentPosition="center"
-        />
-      </View>
+      <SwiftyBanner topInset={insets.top} />
       <View style={[styles.topBar, { top: insets.top }]}>
         <LiveDot />
         <View style={{ flex: 1 }} />

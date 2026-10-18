@@ -72,3 +72,6 @@ Default **1926**; see `/app/memory/test_credentials.md`.
 - After picking a name, player lands on Bio tab
 - Round detail pages: slim ROUND 1/2/3 switcher under scoreboard
 - Result buttons show just 🇳🇿 / HALVED / 🌍
+
+## Iteration 6 (Jun 2026)
+- New split-flap green/gold "THE SWIFTY CUP" banner (native port of swifty-cup-banner.html, Bebas Neue + IBM Plex Mono via expo-font) on every page incl. pick-player
