@@ -4,6 +4,7 @@ import React from "react";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Header, Scoreboard } from "@/src/components/chrome";
+import { TrophyCabinet } from "@/src/components/trophy-cabinet";
 import { useAppState } from "@/src/api";
 import { colors, radius, spacing } from "@/src/theme";
 
@@ -22,6 +23,7 @@ export default function RoundsScreen() {
     >
       <Header />
       <Scoreboard />
+      <TrophyCabinet />
 
       <View style={styles.head}>
         <Text style={styles.title}>Rounds</Text>

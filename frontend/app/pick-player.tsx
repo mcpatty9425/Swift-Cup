@@ -54,7 +54,7 @@ export default function PickPlayerScreen() {
         <Text style={styles.title}>The Swifty Cup</Text>
         <Text style={styles.titleItalic}>2026</Text>
         <View style={styles.titleRule} />
-        <Text style={styles.meta}>3 ROUNDS  •  1 WINNER  •  12 PLAYERS</Text>
+        <Text style={styles.meta}>3 ROUNDS  •  2 TEAMS  •  1 WINNER</Text>
 
         <Text style={styles.selectKicker}>SELECT YOUR NAME</Text>
 
@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
     borderColor: "#dcd6c3",
     paddingVertical: 16,
     paddingHorizontal: 14,
-    alignItems: "flex-start",
+    alignItems: "center",
     minHeight: 56,
     justifyContent: "center",
   },
@@ -193,5 +193,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "800",
     fontStyle: "italic",
+    textAlign: "center",
   },
 });

@@ -28,7 +28,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="rounds" options={{ title: "Rounds", tabBarIcon: (p) => <TabIcon name="golf" {...p} /> }} />
       <Tabs.Screen
         name="leaderboard"
-        options={{ title: "Leaderboard", tabBarIcon: (p) => <TabIcon name="trophy" {...p} /> }}
+        options={{ title: "Board", tabBarIcon: (p) => <TabIcon name="trophy" {...p} /> }}
       />
       <Tabs.Screen
         name="pairings"

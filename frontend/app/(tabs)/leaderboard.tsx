@@ -22,7 +22,7 @@ export default function LeaderboardScreen() {
       <Scoreboard />
 
       <View style={styles.head}>
-        <Text style={styles.title}>Leaderboard</Text>
+        <Text style={styles.title}>Board</Text>
         <Text style={styles.sub}>
           {lb?.cup_winner
             ? lb.cup_winner === "TIE"

@@ -60,3 +60,8 @@ Default **1926**; see `/app/memory/test_credentials.md`.
 - Pick-player names sorted alphabetically (World left, NZ right)
 - Venues: R1 Tairua (Thu 5 Nov), R2 Mercury Bay (Fri 6 Nov), R3 The Dunes Matarangi (Sat 7 Nov)
 - New Players tab (photo, name, team, handicap, bio); handicap editable in Bio + admin All Bios
+
+## Iteration 4 (Jun 2026)
+- Home names centred; meta "3 ROUNDS • 2 TEAMS • 1 WINNER"
+- Rounds page trophy cabinet: 2022 World, 2023 World, 2024 NZ, 2025 World + large 2026 trophy (shows ? until cup_winner, then auto-updates to winning team)
+- Leaderboard tab/title renamed "Board"
