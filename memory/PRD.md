@@ -65,3 +65,10 @@ Default **1926**; see `/app/memory/test_credentials.md`.
 - Home names centred; meta "3 ROUNDS • 2 TEAMS • 1 WINNER"
 - Rounds page trophy cabinet: 2022 World, 2023 World, 2024 NZ, 2025 World + large 2026 trophy (shows ? until cup_winner, then auto-updates to winning team)
 - Leaderboard tab/title renamed "Board"
+
+## Iteration 5 (Jun 2026)
+- Trophy cabinet: emoji-only under past trophies; removed 2026 hint
+- Custom photo cropper (drag/pinch/zoom buttons) before upload, used in Bio and admin All Bios
+- After picking a name, player lands on Bio tab
+- Round detail pages: slim ROUND 1/2/3 switcher under scoreboard
+- Result buttons show just 🇳🇿 / HALVED / 🌍

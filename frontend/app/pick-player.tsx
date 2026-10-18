@@ -22,7 +22,7 @@ export default function PickPlayerScreen() {
 
   async function choose(id: string) {
     await setPlayer(id);
-    router.replace("/rounds");
+    router.replace("/bio");
   }
 
   const players = data?.players ?? [];

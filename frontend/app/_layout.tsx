@@ -33,7 +33,7 @@ function Gate({ children }: { children: React.ReactNode }) {
     if (!playerId && first !== "pick-player") {
       router.replace("/pick-player");
     } else if (playerId && first === "pick-player") {
-      router.replace("/rounds");
+      router.replace("/bio");
     }
   }, [playerId, loading, segments, router]);
 

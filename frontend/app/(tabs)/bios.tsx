@@ -1,6 +1,6 @@
 import Ionicons from "@react-native-vector-icons/ionicons";
-import * as ImageManipulator from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
+import { useCropper } from "@/src/components/photo-cropper";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
@@ -79,6 +79,7 @@ function EditPlayerSheet({ player, onClose }: { player: Player | null; onClose: 
   const insets = useSafeAreaInsets();
   const qc = useQueryClient();
   const update = useUpdatePlayer();
+  const { requestCrop, cropperElement } = useCropper();
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
   const [handicap, setHandicap] = useState("");
@@ -121,19 +122,14 @@ function EditPlayerSheet({ player, onClose }: { player: Player | null; onClose: 
     const res = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
       quality: 0.9,
-      allowsEditing: true,
-      aspect: [1, 1],
     });
     if (res.canceled || !res.assets?.[0]) return;
     const asset = res.assets[0];
+    const croppedUri = await requestCrop({ uri: asset.uri, width: asset.width, height: asset.height });
+    if (!croppedUri) return;
     setBusy(true);
     try {
-      // Resize + recompress to JPEG for fast loading
-      const processed = await ImageManipulator.manipulateAsync(
-        asset.uri,
-        [{ resize: { width: 512 } }],
-        { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG },
-      );
+      const processed = { uri: croppedUri };
       const token = await loadToken();
       const r = await uploadForm(`${API_URL}/api/photos`, {
         fields: { player_id: player!.id },
@@ -160,7 +156,7 @@ function EditPlayerSheet({ player, onClose }: { player: Player | null; onClose: 
   async function removePhoto() {
     setBusy(true);
     try {
-      await update.mutateAsync({ id: player!.id, photo_path: null });
+      await update.mutateAsync({ id: player!.id, photo_path: "" });
       setSavedAt(Date.now());
     } catch (e: any) {
       setError(e?.message || "Remove failed");
@@ -252,6 +248,7 @@ function EditPlayerSheet({ player, onClose }: { player: Player | null; onClose: 
             </Pressable>
           </View>
         </KeyboardAvoidingView>
+        {cropperElement}
       </View>
     </Modal>
   );

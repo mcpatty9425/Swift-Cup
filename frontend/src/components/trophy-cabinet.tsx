@@ -35,9 +35,7 @@ export function TrophyCabinet() {
           <View key={h.year} style={styles.small} testID={`trophy-${h.year}`}>
             <Ionicons name="trophy" size={34} color={teamColor(h.team)} />
             <Text style={styles.smallYear}>{h.year}</Text>
-            <Text style={[styles.smallTeam, { color: teamColor(h.team) }]} numberOfLines={2}>
-              {teamLabel(h.team)}
-            </Text>
+            <Text style={styles.smallTeam}>{h.team === "NZ" ? "🇳🇿" : "🌍"}</Text>
           </View>
         ))}
       </View>
@@ -48,7 +46,6 @@ export function TrophyCabinet() {
         <Text style={[styles.bigTeam, { color: teamColor(winner) }]} testID="trophy-2026-winner">
           {winner === "NZ" || winner === "WORLD" ? teamLabel(winner) : winner === "TIE" ? "Tied" : "?"}
         </Text>
-        {!winner ? <Text style={styles.bigHint}>Decided after the final round</Text> : null}
       </View>
     </View>
   );
@@ -69,7 +66,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   smallYear: { color: colors.onSurface, fontSize: 15, fontWeight: "900", marginTop: 4 },
-  smallTeam: { fontSize: 10, fontWeight: "800", textAlign: "center", marginTop: 2 },
+  smallTeam: { fontSize: 20, textAlign: "center", marginTop: 2 },
   big: {
     marginTop: spacing.md,
     alignItems: "center",
@@ -80,5 +77,4 @@ const styles = StyleSheet.create({
   },
   bigYear: { color: colors.onSurface, fontSize: 28, fontWeight: "900", marginTop: spacing.sm },
   bigTeam: { fontSize: 22, fontWeight: "900", marginTop: 2 },
-  bigHint: { color: colors.muted, fontSize: 12, marginTop: 4 },
 });

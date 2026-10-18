@@ -1,6 +1,6 @@
 import Ionicons from "@react-native-vector-icons/ionicons";
-import * as ImageManipulator from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
+import { useCropper } from "@/src/components/photo-cropper";
 import { useRouter } from "expo-router";
 import { useQueryClient } from "@tanstack/react-query";
 import React, { useEffect, useState } from "react";
@@ -29,6 +29,7 @@ export default function BioScreen() {
   const qc = useQueryClient();
   const { data } = useAppState();
   const { playerId, setPlayer } = usePlayer();
+  const { requestCrop, cropperElement } = useCropper();
   const me = (data?.players ?? []).find((p) => p.id === playerId) || null;
 
   const [bio, setBio] = useState("");
@@ -78,17 +79,14 @@ export default function BioScreen() {
     const res = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
       quality: 0.9,
-      allowsEditing: true,
-      aspect: [1, 1],
     });
     if (res.canceled || !res.assets?.[0]) return;
+    const asset = res.assets[0];
+    const croppedUri = await requestCrop({ uri: asset.uri, width: asset.width, height: asset.height });
+    if (!croppedUri) return;
     setBusy(true);
     try {
-      const processed = await ImageManipulator.manipulateAsync(
-        res.assets[0].uri,
-        [{ resize: { width: 512 } }],
-        { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG },
-      );
+      const processed = { uri: croppedUri };
       const r = await uploadForm(`${API_URL}/api/photos-self`, {
         fields: { player_id: me.id },
         files: { file: { uri: processed.uri, name: "photo.jpg", mimeType: "image/jpeg" } },
@@ -210,6 +208,7 @@ export default function BioScreen() {
           </>
         )}
       </ScrollView>
+      {cropperElement}
     </KeyboardAvoidingView>
   );
 }

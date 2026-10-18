@@ -111,7 +111,7 @@ export function MatchCard({
       <View style={styles.btnRow}>
         <ResultButton
           testID={`result-nz-${match.round}-${match.index}`}
-          label="🇳🇿 NZ WIN"
+          label="🇳🇿"
           color={colors.nz}
           selected={match.result === "NZ_WIN"}
           onPress={() => pick("NZ_WIN")}
@@ -125,7 +125,7 @@ export function MatchCard({
         />
         <ResultButton
           testID={`result-world-${match.round}-${match.index}`}
-          label="🌍 WORLD WIN"
+          label="🌍"
           color={colors.world}
           selected={match.result === "WORLD_WIN"}
           onPress={() => pick("WORLD_WIN")}
@@ -157,7 +157,10 @@ function ResultButton({
         selected ? { backgroundColor: color, borderColor: color } : { borderColor: color },
       ]}
     >
-      <Text style={[styles.rbtnText, selected ? { color: colors.onBrand } : { color }]} numberOfLines={1}>
+      <Text
+        style={[styles.rbtnText, label === "HALVED" && { fontSize: 14 }, selected ? { color: colors.onBrand } : { color }]}
+        numberOfLines={1}
+      >
         {label}
       </Text>
     </Pressable>
@@ -240,5 +243,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
     backgroundColor: "transparent",
   },
-  rbtnText: { fontSize: 12, fontWeight: "900", letterSpacing: 0.5, textAlign: "center" },
+  rbtnText: { fontSize: 22, fontWeight: "900", letterSpacing: 0.5, textAlign: "center" },
 });

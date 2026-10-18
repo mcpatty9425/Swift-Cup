@@ -1,11 +1,13 @@
+import { useRouter } from "expo-router";
 import React from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Header, Scoreboard } from "@/src/components/chrome";
 import { MatchCard } from "@/src/components/match-card";
 import { useAppState } from "@/src/api";
-import { colors, spacing } from "@/src/theme";
+import { colors, radius, spacing } from "@/src/theme";
 
 export default function RoundScreen({ round, title, format }: { round: 1 | 2 | 3; title: string; format: string }) {
+  const router = useRouter();
   const { data, isLoading } = useAppState();
   const matches = (data?.matches ?? []).filter((m) => m.round === round);
   const players = data?.players ?? [];
@@ -19,6 +21,19 @@ export default function RoundScreen({ round, title, format }: { round: 1 | 2 | 3
     >
       <Header />
       <Scoreboard />
+
+      <View style={styles.switcher} testID="round-switcher">
+        {([1, 2, 3] as const).map((r) => (
+          <Pressable
+            key={r}
+            testID={`round-switch-${r}`}
+            onPress={() => r !== round && router.replace(`/r${r}` as any)}
+            style={[styles.swBtn, r === round && styles.swBtnActive]}
+          >
+            <Text style={[styles.swText, r === round && styles.swTextActive]}>ROUND {r}</Text>
+          </Pressable>
+        ))}
+      </View>
 
       <View style={styles.header}>
         <Text style={styles.hRound}>{title}</Text>
@@ -51,6 +66,20 @@ export default function RoundScreen({ round, title, format }: { round: 1 | 2 | 3
 }
 
 const styles = StyleSheet.create({
+  switcher: {
+    flexDirection: "row",
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.sm,
+    backgroundColor: colors.surface,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: 3,
+  },
+  swBtn: { flex: 1, height: 32, borderRadius: radius.pill, alignItems: "center", justifyContent: "center" },
+  swBtnActive: { backgroundColor: colors.brand },
+  swText: { color: colors.muted, fontSize: 12, fontWeight: "800", letterSpacing: 1 },
+  swTextActive: { color: colors.onBrand },
   header: {
     marginTop: spacing.lg,
     marginHorizontal: spacing.lg,

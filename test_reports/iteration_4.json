@@ -1,0 +1,33 @@
+{
+  "summary": "Iteration 4 (frontend-only) verified end-to-end. (1) TROPHY CABINET: testID trophy-cabinet shows 4 small trophies (trophy-2022..2025) each containing year + only emoji (🌍 for 2022/2023/2025, 🇳🇿 for 2024) — the 'Team World'/'Team NZ' text is gone. Inner text verified: '2022\\n🌍', '2023\\n🌍', '2024\\n🇳🇿', '2025\\n🌍'. (2) BIG TROPHY 2026: no longer shows 'Decided after the final round'. When leaderboard.cup_winner is null it shows '?'; when set, shows the winner label (e.g. '🌍 Team World'). Verified both states — observed '?' with current no-winner state and '🌍 Team World' earlier when a winner was set. (3) PHOTO CROPPER: tapping btn-upload-photo on Bio tab opens native file picker (web file chooser), after choosing a non-square 800x500 JPEG the custom crop screen appears with testID cropper-frame. All 4 controls work: cropper-zoom-in, cropper-zoom-out, cropper-reset, cropper-cancel, cropper-done. Cancel closes modal with no upload. Done pipes through expo-image-manipulator to a 512x512 JPEG and POSTs to /api/photos-self — avatar on Bio and Players tabs updates and GET /api/players returns photo_path for the player (confirmed photo_path = 'the-swifty-cup-2026/players/{id}/{hash}.jpg'). Drag on frame via mouse down/move/up also works. (4) ADMIN ALL BIOS: 3-dot menu (testID header-menu-button) → Admin Login (menu-admin-login) → PIN 1926 via admin-pin-input/admin-pin-submit → menu now exposes menu-admin-bios and menu-logout → navigates to bios-screen with testID bio-row-{id} rows. Tapping a row opens the edit sheet with btn-upload-photo which also opens the SAME cropper and uploads via /api/photos — verified photo_path saved for Wade Mackie. (5) REGRESSION: all 5 tabs (Rounds, Board, Pairings, Players, Bio) still render without errors; pick-player screen still shows 6 World + 6 NZ chips. CLEANUP: both test photos removed — Ally Pally photo_path cleared via self-remove UI (returns null), Wade Mackie photo_path cleared via admin PATCH with photo_path:'' (direct curl). Final /api/players for both now returns photo_path:null.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {"flow": "Admin bios edit sheet → Remove photo (btn-remove-photo)", "issue": "In /app/frontend/app/(tabs)/bios.tsx removePhoto() calls update.mutateAsync({ photo_path: null }). Server appears to drop null fields (likely Pydantic exclude_unset / exclude_none on PATCH), so admin Remove does NOT clear the photo_path. Direct curl PATCH with photo_path:'' (empty string) returns 200 and clears correctly — same pattern that self-remove in bio.tsx uses. Suggestion: change bios.tsx removePhoto to send photo_path:'' instead of null (match bio.tsx). Low priority — pre-existing, not caused by this iteration's cropper changes, and not in scope of this review.", "affected_testIDs": ["btn-remove-photo (admin bios sheet)"]}
+    ],
+    "design_issues": [],
+    "react_native_issues": [
+      {"component": "photo-cropper.tsx circle overlay (line 116)", "issue": "React Native Web console warning: 'props.pointerEvents is deprecated. Use style.pointerEvents'. The <View pointerEvents=\"none\" ... /> inside the cropper triggers the warning. Non-blocking, but recommended to migrate to style={{ pointerEvents: 'none', ... }} to silence."}
+    ]
+  },
+  "test_report_links": ["/app/test_reports/iteration_4.json"],
+  "action_items": [
+    "(Optional, out of scope) In /app/frontend/app/(tabs)/bios.tsx, change admin removePhoto to send photo_path:'' instead of null so admin Remove button clears avatars server-side (matches self-remove pattern).",
+    "(Optional) Migrate photo-cropper.tsx circle overlay to use style.pointerEvents to silence RN Web deprecation warning."
+  ],
+  "critical_code_review_comments": [
+    "trophy-cabinet.tsx correctly removes the 'Team World/Team NZ' text under each year — now renders only the flag/globe emoji in <Text style={styles.smallTeam}>.",
+    "trophy-cabinet.tsx big 2026 trophy still shows '?' when winner is null/undefined and renders 'Tied' for TIE and the full teamLabel when NZ/WORLD — the old 'Decided after the final round' subtitle is removed.",
+    "photo-cropper.tsx is well-isolated: useCropper() returns a promise that resolves to the cropped URI (or null on cancel) and a cropperElement to mount — reused by both bio.tsx and bios.tsx without duplication.",
+    "photo-cropper.tsx uses expo-image-manipulator to crop + resize to 512x512 JPEG at 0.8 quality — matches the spec. Clamp logic for translate correctly bounds pan to the frame size.",
+    "bio.tsx and bios.tsx both correctly await requestCrop() before uploading, and bail out when it returns null (cancel). Correct use of react-query invalidateQueries after upload."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "n/a (frontend-only)", "frontend": "100%"},
+  "seed_data_creation": "No seed changes. Test photos uploaded to Ally Pally and Wade Mackie during tests were both removed. Final state: /api/players photo_path = null for both.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Admin PIN 1926. Menu testIDs: header-menu-button, menu-admin-login, admin-pin-input, admin-pin-submit, menu-admin-bios, menu-logout. Cropper testIDs: cropper-frame, cropper-zoom-in, cropper-zoom-out, cropper-reset, cropper-done, cropper-cancel. On web the ImagePicker uses a file chooser — use `page.expect_file_chooser()` + `fc.set_files(path)`. Bio screen uses /api/photos-self (no auth) with field player_id; admin bios uses /api/photos with Bearer token. Admin PATCH /api/players/{id} drops null fields — send photo_path:'' to clear. trophy-2026-winner text is '?' when cup_winner null, 'Tied' for TIE, or the full teamLabel for NZ/WORLD.",
+  "rca_of_issue": "Minor pre-existing issue (out of scope): admin bios remove sends photo_path:null which server drops; use empty string. All iteration-4 features (trophy text removal, big-trophy subtitle removal, cropper modal) implemented correctly."
+}
