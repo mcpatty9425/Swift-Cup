@@ -197,6 +197,7 @@ export function useLiveSync(qc: QueryClient) {
         ws.onmessage = () => {
           // any change — refetch state
           qc.invalidateQueries({ queryKey: ["state"] });
+          qc.invalidateQueries({ queryKey: ["scores"] });
         };
       } catch {
         setTimeout(connect, 2000);

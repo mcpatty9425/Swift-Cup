@@ -46,6 +46,15 @@ const palette = {
   nz: "#1e3a8a",
   world: "#c05a2a",
   gold: "#c4941f",
+
+  // Scores section (deep green / cream / bright gold)
+  green: "#0B3A2D",
+  greenDeep: "#082a21",
+  greenCard: "#123f31",
+  greenLine: "#1f5a47",
+  cream: "#F4EFE1",
+  creamMuted: "rgba(244,239,225,0.65)",
+  goldBright: "#F0C766",
 };
 
 export type ThemeColors = typeof palette;

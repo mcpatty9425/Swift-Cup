@@ -78,3 +78,10 @@ Default **1926**; see `/app/memory/test_credentials.md`.
 
 ## Iteration 7 (Jun 2026)
 - Big split-flap banner only on opening (pick-player) screen; all other pages use compact 80px "SWIFTY 26’" bar (gold bottom border) with LIVE pill + menu on the right
+
+## Iteration 8 (Jun 2026) — Scores (Stableford)
+- New Scores tab: stableford leaderboard (R2, R3, Total, pending, lowest-first default + Wooden Spoon, best-first toggle, countback back9/6/3/1, pull-to-refresh, live via WS) and tap-through hole-by-hole breakdown (/score-player/[id])
+- /score-entry: pick round + player, one hole per screen (big -/+, starts at par, Pick up, pts + shots), swipe/Next/Back, sticky running total, Review card, keep-awake
+- Offline-first: per-hole edits in AsyncStorage, pending queue, sync every 8s/on foreground, per-hole last-write-wins on server (POST /api/scores/sync), Synced/Waiting indicator
+- Admin /score-admin: handicap method (as entered / course handicap), allowance 100/95, per-player PH override, course editor (par/SI/rating/slope)
+- Courses seeded: R2 Mercury Bay (71, 68.7/111), R3 The Dunes (72, 72.2/128)

@@ -1,0 +1,30 @@
+{
+  "summary": "Iteration 5 Scores section — PASS (both). Backend: 11/11 pytest in /app/backend/tests/test_scores_iter5.py. Verified GET /api/scores/state (2 courses R2 Mercury Bay par 71 / rating 68.7 / slope 111 and R3 The Dunes par 72 / 72.2 / 128, each 18 holes with SI 1..18 unique; settings AS_ENTERED/100; overrides []); POST /api/scores/sync merges per hole, older t does NOT overwrite newer t, invalid player ignored silently; PUT /api/courses/2 and /scores/settings and /scores/ph require admin (401 without Bearer), reject duplicate SI and !=18 holes with 400; PH override null clears; settings round-trip COURSE/95 → AS_ENTERED/100. Frontend: STABLEFORD title + testID scores-screen + sync-indicator Synced + enter-scores-button + sort-lowest-first/sort-best-first + 12 player rows all pending by default. Entry flow: entry-round-2 → entry-player-{id} → entry-start → HOLE 1 with hole-number/hole-par/hole-si, score-value starts at par 4, score-minus/plus, score-pickup, hole-points 3, hole-shots 'You get 1 shot', running-total, open-review, hole-next/hole-back all work. STABLEFORD MATH VERIFIED: with PH=14 override on Ally for R2, tapping NEXT 18 times (all pars) → review-total '50 pts · 18/18 · Gross 71' ✅; then +1 on every hole (bogeys) → review-total '32 pts · 18/18 · Gross 89' ✅ (matches spec). Review card: review-card renders, review-hole-7 tap jumps to HOLE 7. Leaderboard: after cards for 2 players (Ally 32, Caleb 49), default Lowest-first lists Ally first (pos 2) and Caleb last (pos 1) with wooden-spoon-badge on Ally; sort-best-first flips to Caleb first; tap score-row-{ally} navigates to /score-player/{id} with testID score-breakdown. Offline: context.set_offline(True), score change on hole screen updates optimistically, navigating back to scores shows 'Waiting for signal'; set_offline(False) → within 1s pill shows 'Synced' and GET /api/scores/state contains the offline-entered score (hole1 g=4 after -1). Reload while offline fails network but local AsyncStorage preserves state (verified post-sync value persisted). Admin Scores Setup: menu-admin-scores reachable after admin login (PIN 1926) → /score-admin with testIDs score-admin, method-AS_ENTERED, method-COURSE, allowance-100, allowance-95, course-save, ph-plus/minus/auto-{player_id}. Regression: Rounds/Board/Pairings/Players/Bio/Scores tabs all render without errors. CLEANUP DONE: scorecards.deleteMany({}) and ph_overrides.deleteMany({}) via mongo; score_settings reset to AS_ENTERED/100; both courses restored to defaults via admin PUT. Final state has cards=0, overrides=0, settings={method:AS_ENTERED, allowance:100}. No player handicaps were changed (Ally index 30 and Caleb ~13 were pre-existing).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_scores_iter5.py",
+    "/app/test_reports/pytest/pytest_iter5.xml",
+    "/app/test_reports/iteration_5.json"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "stableford.ts strokesOn correctly implements floor(PH/18) + (SI <= PH%18) and plus-handicap case; verified 14-handicap at Mercury Bay (par 71) yields 50 pts all pars and 32 pts all bogeys exactly as spec'd.",
+    "scores-store.tsx offline queue is robust: pending keys stored in AsyncStorage, versions ref prevents clearing pending that was edited mid-flight, 8s retry interval + AppState active trigger ensures reconnection sync.",
+    "server.py /api/scores/sync merge is last-write-wins per-hole using client timestamp; silently ignores unknown player_id which satisfies the spec and avoids leaking player existence.",
+    "server.py PUT /api/courses/{round} validates 18 holes with unique SI 1-18 and admin JWT — both 400 paths covered.",
+    "score-helpers.tsx useScoreRows: ranked sorted by compareBetter(b,a) (best first), pending appended by name; wooden-spoon-id = last of ranked only when ranked.length > 1; countback cb uses latest round's back9/last6/last3/last1."
+  ],
+  "updated_files": ["/app/backend/tests/test_scores_iter5.py"],
+  "success_rate": {"backend": "100% (11/11)", "frontend": "100%"},
+  "seed_data_creation": "During tests: PH override 14 for Ally R2+R3, scorecards for Ally R2 (bogeys) and Caleb R2 (pars). All removed post-test. Default settings restored, both courses restored to spec defaults.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Public URL requires valid browser headers (urllib from host returns 403); use page.evaluate fetch('/api/...') from within browser context. Score-entry screen is full-screen modal (no tab bar). To exit entry flow use review-done or entry-top-left. PH override API: PUT /api/scores/ph/{round}/{player_id} body {ph: int|null}. Mercury Bay (R2) hole order first few: par 4 SI 5, par 3 SI 12, par 4 SI 17… Pick-player testIDs use first name: pick-Ally Pally etc. Offline reload loses nothing because scores-store persists local edits and pending keys in AsyncStorage before sync.",
+  "rca_of_issue": "No issues found — all specified behaviours (stableford math, offline sync, admin gating, leaderboard sort + wooden spoon, countback, breakdown nav, review-hole tap-to-fix) work correctly."
+}

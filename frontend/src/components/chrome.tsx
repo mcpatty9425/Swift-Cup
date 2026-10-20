@@ -89,6 +89,17 @@ export function Header({ title, showAdminMenu = true }: { title?: string; showAd
                   <Text style={styles.menuItemText}>Admin: All Bios</Text>
                 </Pressable>
                 <Pressable
+                  testID="menu-admin-scores"
+                  style={styles.menuItem}
+                  onPress={() => {
+                    setMenuOpen(false);
+                    router.push("/score-admin" as any);
+                  }}
+                >
+                  <Ionicons name="settings-outline" size={18} color={colors.onSurface} />
+                  <Text style={styles.menuItemText}>Admin: Scores Setup</Text>
+                </Pressable>
+                <Pressable
                   testID="menu-logout"
                   style={styles.menuItem}
                   onPress={async () => {
@@ -207,7 +218,6 @@ export function Scoreboard({ compact = false }: { compact?: boolean }) {
 
 const styles = StyleSheet.create({
   headerWrap: {
-    backgroundColor: colors.background,
     paddingBottom: spacing.xs,
   },
   bannerBox: {

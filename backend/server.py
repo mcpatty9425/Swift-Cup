@@ -720,6 +720,144 @@ async def upload_photo_self(player_id: str = Form(...), file: UploadFile = File(
     return {"photo_path": path, "player": doc}
 
 
+# ================= Scores (stableford) =================
+COURSE_DEFAULTS = {
+    2: {
+        "name": "Mercury Bay Golf Club, Whitianga",
+        "par": 71, "rating": 68.7, "slope": 111,
+        "holes": [[4, 5], [3, 12], [4, 17], [3, 18], [5, 8], [3, 14], [5, 9], [4, 1], [5, 16],
+                  [4, 13], [5, 11], [3, 4], [4, 2], [3, 10], [4, 3], [5, 6], [4, 7], [3, 15]],
+    },
+    3: {
+        "name": "The Dunes, Matarangi",
+        "par": 72, "rating": 72.2, "slope": 128,
+        "holes": [[4, 8], [4, 6], [5, 16], [4, 10], [3, 4], [4, 2], [3, 18], [4, 12], [4, 14],
+                  [5, 13], [3, 11], [4, 9], [4, 3], [5, 5], [4, 1], [4, 17], [5, 7], [3, 15]],
+    },
+}
+
+
+class Hole(BaseModel):
+    par: int = Field(ge=3, le=6)
+    si: int = Field(ge=1, le=18)
+
+
+class CourseUpdate(BaseModel):
+    name: str
+    par: int
+    rating: float
+    slope: int
+    holes: List[Hole]
+
+
+class ScoreSettingsUpdate(BaseModel):
+    method: Optional[Literal["AS_ENTERED", "COURSE"]] = None
+    allowance: Optional[int] = Field(default=None, ge=50, le=100)
+
+
+class PhOverride(BaseModel):
+    ph: Optional[int] = None  # null clears
+
+
+class HoleEntry(BaseModel):
+    g: Optional[int] = Field(default=None, ge=1, le=20)
+    pu: bool = False
+    t: int  # client timestamp (ms)
+
+
+class CardSync(BaseModel):
+    player_id: str
+    round: Literal[2, 3]
+    holes: Dict[str, HoleEntry]
+
+
+class SyncPayload(BaseModel):
+    cards: List[CardSync]
+
+
+@app.on_event("startup")
+async def seed_scores() -> None:
+    for rnd, c in COURSE_DEFAULTS.items():
+        if not await db.courses.find_one({"round": rnd}):
+            await db.courses.insert_one({
+                "round": rnd, "name": c["name"], "par": c["par"], "rating": c["rating"], "slope": c["slope"],
+                "holes": [{"par": p, "si": s} for p, s in c["holes"]],
+            })
+    if not await db.score_settings.find_one({"_id": "default"}):
+        await db.score_settings.insert_one({"_id": "default", "method": "AS_ENTERED", "allowance": 100})
+
+
+@api_router.get("/scores/state")
+async def scores_state() -> dict:
+    courses = await db.courses.find({}, {"_id": 0}).sort("round", 1).to_list(5)
+    settings = await db.score_settings.find_one({"_id": "default"}, {"_id": 0}) or {"method": "AS_ENTERED", "allowance": 100}
+    overrides = await db.ph_overrides.find({}, {"_id": 0}).to_list(100)
+    cards = await db.scorecards.find({}, {"_id": 0}).to_list(100)
+    return {"courses": courses, "settings": settings, "overrides": overrides, "cards": cards}
+
+
+@api_router.post("/scores/sync")
+async def scores_sync(payload: SyncPayload) -> dict:
+    """Public. Per-hole last-write-wins merge by client timestamp."""
+    for card in payload.cards:
+        if not await db.players.find_one({"id": card.player_id}, {"_id": 1}):
+            continue
+        existing = await db.scorecards.find_one({"player_id": card.player_id, "round": card.round}, {"_id": 0})
+        holes = (existing or {}).get("holes", {})
+        for n, h in card.holes.items():
+            if not n.isdigit() or not 1 <= int(n) <= 18:
+                continue
+            cur = holes.get(n)
+            if not cur or h.t >= cur.get("t", 0):
+                holes[n] = h.model_dump()
+        await db.scorecards.update_one(
+            {"player_id": card.player_id, "round": card.round},
+            {"$set": {"holes": holes, "updated_at": datetime.now(timezone.utc).isoformat()}},
+            upsert=True,
+        )
+    await broker.broadcast({"type": "scores_changed"})
+    return {"ok": True, "synced": len(payload.cards)}
+
+
+@api_router.put("/courses/{round_num}", dependencies=[Depends(require_admin)])
+async def update_course(round_num: int, body: CourseUpdate) -> dict:
+    if round_num not in (2, 3):
+        raise HTTPException(status_code=400, detail="Invalid round")
+    if len(body.holes) != 18:
+        raise HTTPException(status_code=400, detail="18 holes required")
+    if sorted(h.si for h in body.holes) != list(range(1, 19)):
+        raise HTTPException(status_code=400, detail="Stroke indexes must be 1-18, each used once")
+    doc = {"round": round_num, **body.model_dump()}
+    await db.courses.update_one({"round": round_num}, {"$set": doc}, upsert=True)
+    await broker.broadcast({"type": "scores_changed"})
+    return doc
+
+
+@api_router.patch("/scores/settings", dependencies=[Depends(require_admin)])
+async def update_score_settings(body: ScoreSettingsUpdate) -> dict:
+    patch = {k: v for k, v in body.model_dump().items() if v is not None}
+    if patch:
+        await db.score_settings.update_one({"_id": "default"}, {"$set": patch}, upsert=True)
+    await broker.broadcast({"type": "scores_changed"})
+    return await db.score_settings.find_one({"_id": "default"}, {"_id": 0}) or {}
+
+
+@api_router.put("/scores/ph/{round_num}/{player_id}", dependencies=[Depends(require_admin)])
+async def set_ph_override(round_num: int, player_id: str, body: PhOverride) -> dict:
+    if round_num not in (2, 3):
+        raise HTTPException(status_code=400, detail="Invalid round")
+    if body.ph is None:
+        await db.ph_overrides.delete_one({"round": round_num, "player_id": player_id})
+    else:
+        await db.ph_overrides.update_one(
+            {"round": round_num, "player_id": player_id},
+            {"$set": {"round": round_num, "player_id": player_id, "ph": body.ph}},
+            upsert=True,
+        )
+    await broker.broadcast({"type": "scores_changed"})
+    return {"ok": True}
+
+
 app.include_router(api_router)
 
 

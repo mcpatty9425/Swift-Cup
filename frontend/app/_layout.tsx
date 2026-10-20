@@ -13,6 +13,7 @@ import { AuthProvider } from "@/src/auth";
 import { useLiveSync } from "@/src/api";
 import { queryClient } from "@/src/query-client";
 import { PlayerProvider, usePlayer } from "@/src/player-context";
+import { ScoresProvider } from "@/src/scores-store";
 import { colors } from "@/src/theme";
 
 LogBox.ignoreAllLogs(true);
@@ -55,6 +56,7 @@ export default function RootLayout() {
             <PlayerProvider>
               <AuthProvider>
                 <LiveSyncBridge>
+                  <ScoresProvider>
                   <KeyboardProvider>
                     <Gate>
                       <View style={styles.root}>
@@ -68,6 +70,7 @@ export default function RootLayout() {
                       </View>
                     </Gate>
                   </KeyboardProvider>
+                  </ScoresProvider>
                 </LiveSyncBridge>
               </AuthProvider>
             </PlayerProvider>
