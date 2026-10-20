@@ -75,3 +75,6 @@ Default **1926**; see `/app/memory/test_credentials.md`.
 
 ## Iteration 6 (Jun 2026)
 - New split-flap green/gold "THE SWIFTY CUP" banner (native port of swifty-cup-banner.html, Bebas Neue + IBM Plex Mono via expo-font) on every page incl. pick-player
+
+## Iteration 7 (Jun 2026)
+- Big split-flap banner only on opening (pick-player) screen; all other pages use compact 80px "SWIFTY 26’" bar (gold bottom border) with LIVE pill + menu on the right

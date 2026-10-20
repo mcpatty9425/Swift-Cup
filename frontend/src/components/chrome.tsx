@@ -1,7 +1,7 @@
 // Shared header + leaderboard components for every public screen.
 import Ionicons from "@react-native-vector-icons/ionicons";
 import { Image } from "expo-image";
-import { SwiftyBanner } from "@/src/components/swifty-banner";
+import { CompactBanner } from "@/src/components/swifty-banner";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -54,10 +54,11 @@ export function Header({ title, showAdminMenu = true }: { title?: string; showAd
 
   return (
     <View style={styles.headerWrap}>
-      <SwiftyBanner topInset={insets.top} />
+      <CompactBanner topInset={insets.top} />
       <View style={[styles.topBar, { top: insets.top }]}>
-        <LiveDot />
         <View style={{ flex: 1 }} />
+        <LiveDot />
+        <View style={{ width: spacing.sm }} />
         {showAdminMenu ? (
           <Pressable
             testID="header-menu-button"
@@ -73,7 +74,7 @@ export function Header({ title, showAdminMenu = true }: { title?: string; showAd
 
       <Modal visible={menuOpen} transparent animationType="fade" onRequestClose={() => setMenuOpen(false)}>
         <Pressable style={styles.menuBackdrop} onPress={() => setMenuOpen(false)}>
-          <View style={[styles.menuCard, { marginTop: insets.top + 40 }]}>
+          <View style={[styles.menuCard, { marginTop: insets.top + 76 }]}>
             {isAdmin ? (
               <>
                 <Pressable
@@ -220,11 +221,10 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: 0,
     right: 0,
+    height: 80,
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: spacing.lg,
-    paddingTop: spacing.sm,
-    minHeight: 40,
   },
   menuBtn: {
     width: 36,

@@ -100,7 +100,51 @@ export function SwiftyBanner({ topInset = 0 }: { topInset?: number }) {
   );
 }
 
+export function CompactBanner({ topInset = 0 }: { topInset?: number }) {
+  const t = { h: 29, r: 3, fs: 27, notch: 1.5, line: 1 };
+  return (
+    <View style={[styles.compact, { paddingTop: topInset, height: 80 + topInset }]} testID="swifty-compact-banner">
+      <View style={StyleSheet.absoluteFill} pointerEvents="none">
+        {Array.from({ length: 14 }).map((_, i) => (
+          <View
+            key={i}
+            style={{
+              position: "absolute",
+              top: -100,
+              bottom: -100,
+              left: i * 140 - 140,
+              width: 70,
+              backgroundColor: STRIPE,
+              transform: [{ rotate: "10deg" }],
+            }}
+          />
+        ))}
+      </View>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 11 }}>
+        <View style={{ flexDirection: "row", gap: 3 }}>
+          {"SWIFTY".split("").map((c, i) => (
+            <Tile key={i} ch={c} w={20} {...t} />
+          ))}
+        </View>
+        <View style={{ flexDirection: "row", gap: 3 }}>
+          <Tile ch="2" w={20} {...t} />
+          <Tile ch="6" w={20} {...t} />
+          <Tile ch="’" w={12} {...t} />
+        </View>
+      </View>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
+  compact: {
+    backgroundColor: BG,
+    borderBottomWidth: 2,
+    borderBottomColor: "#D6A84A",
+    paddingLeft: 24,
+    justifyContent: "center",
+    overflow: "hidden",
+  },
   wrap: { backgroundColor: BG, alignItems: "center", overflow: "hidden" },
   row: { flexDirection: "row", alignItems: "center" },
   mono: { fontFamily: "IBMPlexMono-SemiBold", color: GOLD },
