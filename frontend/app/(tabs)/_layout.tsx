@@ -1,11 +1,11 @@
 import Ionicons from "@react-native-vector-icons/ionicons";
 import { Tabs } from "expo-router";
 import React from "react";
-import { Platform, StyleSheet } from "react-native";
+import { ColorValue, Platform, StyleSheet } from "react-native";
 import { colors } from "@/src/theme";
 
-function TabIcon({ name, color, focused }: { name: any; color: string; focused: boolean }) {
-  return <Ionicons name={name} size={focused ? 26 : 22} color={color} />;
+function TabIcon({ name, color, focused }: { name: any; color: ColorValue; focused: boolean }) {
+  return <Ionicons name={name} size={focused ? 26 : 22} color={color as string} />;
 }
 
 export default function TabsLayout() {
@@ -44,12 +44,6 @@ export default function TabsLayout() {
       />
       <Tabs.Screen name="bio" options={{ title: "Bio", tabBarIcon: (p) => <TabIcon name="create" {...p} /> }} />
 
-      {/* Hidden routes still routable: */}
-      <Tabs.Screen name="teams" options={{ href: null }} />
-      <Tabs.Screen name="r1" options={{ href: null }} />
-      <Tabs.Screen name="r2" options={{ href: null }} />
-      <Tabs.Screen name="r3" options={{ href: null }} />
-      <Tabs.Screen name="bios" options={{ href: null }} />
     </Tabs>
   );
 }

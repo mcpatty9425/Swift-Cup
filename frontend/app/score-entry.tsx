@@ -1,7 +1,7 @@
 import Ionicons from "@react-native-vector-icons/ionicons";
-import { useKeepAwake } from "expo-keep-awake";
+import { activateKeepAwakeAsync, deactivateKeepAwake } from "expo-keep-awake";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Directions, Gesture, GestureDetector } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -14,8 +14,32 @@ import { colors, radius, spacing } from "@/src/theme";
 
 type Step = "select" | "hole" | "review";
 
+/** Keep the screen awake; tolerant of web browsers where the wake lock may not activate. */
+function useSafeKeepAwake() {
+  useEffect(() => {
+    const tag = "score-entry";
+    let active = false;
+    let unmounted = false;
+    const off = () => {
+      try {
+        Promise.resolve(deactivateKeepAwake(tag)).catch(() => {});
+      } catch {}
+    };
+    activateKeepAwakeAsync(tag)
+      .then(() => {
+        active = true;
+        if (unmounted) off();
+      })
+      .catch(() => {});
+    return () => {
+      unmounted = true;
+      if (active) off();
+    };
+  }, []);
+}
+
 export default function ScoreEntryScreen() {
-  useKeepAwake();
+  useSafeKeepAwake();
   const params = useLocalSearchParams<{ round?: string; player?: string }>();
   const { playerId: me } = usePlayer();
   const [round, setRound] = useState<2 | 3>(params.round === "3" ? 3 : 2);

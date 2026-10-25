@@ -41,7 +41,7 @@ export default function RoundsScreen() {
                 key={r.round}
                 testID={`round-card-${r.round}`}
                 style={[styles.card, statusBorder(r.status)]}
-                onPress={() => router.push(`/r${r.round}` as any)}
+                onPress={() => router.push(`/rounds/${r.round}` as any)}
               >
                 <View style={styles.cardTop}>
                   <View>

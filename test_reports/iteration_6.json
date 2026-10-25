@@ -1,0 +1,37 @@
+{
+  "summary": "Regression check after the SDK 58 upgrade (expo 58, expo-router 58, RN 0.88, React 19.3) on the web preview at a 390x844 viewport. All test runs were read-only: Playwright blocked every POST/PATCH/PUT/DELETE except admin login, and nothing was blocked because the flows never sent a write. Everything requested works. Pick-player (after clearing localStorage) lands on /bio. All 6 tabs render their screens. round-card-1/2/3 open /rounds/N, which shows the match cards with NZ/HALVED/WORLD buttons (R1: 3 cards, R2: 3, R3: 6). The round-switch-N buttons update the URL and content. The Rounds tab and browser back both return to the /rounds list, and the deep link /rounds/2 works. Score entry: start -> hole screen (all controls present) -> review card -> back -> exit via entry-top-left returns to /scores with no wake-lock overlay. Admin: PIN 1926 login works, menu-admin-bios opens /bios (12 rows) and the edit sheet opens and closes, menu-admin-scores opens score-admin and score-admin-back works. Backend GET /api/state and /api/scores/state both return 200. The ROUTE_NAMES_CHANGED dev-only console error and #error-toast still show on every load but did not block any navigation. No deprecated packages found (no expo-av, expo-barcode-scanner, expo-background-fetch or @expo/vector-icons).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "Admin All Bios (/bios)", "issue": "After moving to a root stack route, /bios has no back button and no tab bar (headerShown:false, Header has only the menu). On web the only way out is the browser back button. On native the only way out is swipe or hardware back. Before the move it was a tab route, so the tab bar was visible. score-admin has a score-admin-back button; /bios should get one too. Reference: /app/frontend/app/bios.tsx:33-36", "testID": "bios-screen", "priority": "MEDIUM"}
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Round detail / Admin Bios", "issues": ["Players with a photo (Patto) show an empty avatar circle with no initials until the remote image loads. Show the initials as a placeholder while it loads."]}
+    ],
+    "react_native_issues": [
+      {"component": "expo-router 58 ROUTE_NAMES_CHANGED", "issue": "Dev-only console error/toast on every load: \"The action 'ROUTE_NAMES_CHANGED' with payload {routeNames:[rounds,leaderboard,scores,pairings,players,bio]} was not handled by any navigator\". It does not block navigation. It comes from the (tabs) navigator's route names changing after mount, probably due to the Gate's router.replace during the initial render and/or asyncRoutes. Reference: /app/frontend/app/_layout.tsx:32-40"},
+      {"component": "TypeScript types (RN 0.88)", "issue": "tsc --noEmit reports 3 errors: StyleSheet.NamedStyles is no longer exported by react-native 0.88 types. This is type-only; the app runs fine. Reference: /app/frontend/src/theme.ts:77-78"}
+    ]
+  },
+  "test_report_links": [".screenshots/ (browser automation runs: rounds, scores entry, admin)"],
+  "action_items": [
+    "Add a back button (e.g. testID 'bios-back' calling router.back(), with a fallback router.replace('/bio') when it can't go back) to /bios, matching score-admin. It currently has no in-app way out.",
+    "Replace StyleSheet.NamedStyles in src/theme.ts makeStyles with the RN 0.88 equivalent, e.g. StyleSheet.NamedStyles -> { [K in keyof T]: ViewStyle | TextStyle | ImageStyle }.",
+    "Optional: look into the ROUTE_NAMES_CHANGED dev warning (dev-only, not blocking).",
+    "Optional: useSafeKeepAwake in score-entry.tsx skips deactivateKeepAwake if the screen unmounts before activateKeepAwakeAsync resolves (active is still false). Set a 'cancelled' flag and deactivate in the .then when it is set.",
+    "Optional: add a testID to the Close button of the EditPlayerSheet (bios.tsx:234)."
+  ],
+  "critical_code_review_comments": [
+    "score-entry.tsx:18-33: the keep-awake hook can leak a wake lock if the screen unmounts before activation resolves.",
+    "bios.tsx:234: the sheet's Close Pressable has no testID.",
+    "Round detail route ([n].tsx) quietly coerces invalid n (e.g. /rounds/9) to round 1. That is acceptable, but a not-found state would be cleaner."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "100% (2/2 sanity GETs)", "frontend": "100% of requested flows passed; 1 medium UX regression (/bios has no back affordance)"},
+  "seed_data_creation": "None. Read-only testing; all write requests were blocked by the Playwright route guard and none were attempted.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Live app in real use: do not mutate data. Use a Playwright route guard that aborts POST/PATCH/PUT/DELETE except /api/admin/login. Pick-player testIDs use the full name (e.g. 'pick-Ally Pally'), so clicking get_by_text('Ally', exact=True) is easier. Tabs stay mounted, so use the :visible suffix for round-switch/match-card selectors. The sheet close button text is 'Close'. Backend URL key in frontend/.env is EXPO_PUBLIC_BACKEND_URL.",
+  "rca_of_issue": ""
+}

@@ -1,4 +1,5 @@
 import Ionicons from "@react-native-vector-icons/ionicons";
+import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { useCropper } from "@/src/components/photo-cropper";
 import React, { useState } from "react";
@@ -25,6 +26,7 @@ import { useQueryClient } from "@tanstack/react-query";
 
 export default function BiosScreen() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const { data } = useAppState();
   const players = data?.players ?? [];
   const [editing, setEditing] = useState<Player | null>(null);
@@ -33,6 +35,10 @@ export default function BiosScreen() {
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 40 }} testID="bios-screen">
         <Header />
+        <Pressable testID="bios-back" onPress={() => router.back()} style={styles.backRow} hitSlop={8}>
+          <Ionicons name="chevron-back" size={22} color={colors.onSurface} />
+          <Text style={styles.backText}>Back</Text>
+        </Pressable>
         <Scoreboard />
         <View style={styles.listHeader}>
           <Text style={styles.listTitle}>Admin · Player Bios</Text>
@@ -231,7 +237,7 @@ function EditPlayerSheet({ player, onClose }: { player: Player | null; onClose: 
           {savedAt ? <Text style={styles.ok}>Saved ✓</Text> : null}
 
           <View style={styles.sheetActions}>
-            <Pressable style={[styles.sheetBtn, styles.sheetCancel]} onPress={onClose}>
+            <Pressable testID="btn-close-player" style={[styles.sheetBtn, styles.sheetCancel]} onPress={onClose}>
               <Text style={styles.sheetCancelText}>Close</Text>
             </Pressable>
             <Pressable
@@ -255,6 +261,8 @@ function EditPlayerSheet({ player, onClose }: { player: Player | null; onClose: 
 }
 
 const styles = StyleSheet.create({
+  backRow: { flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: spacing.md, minHeight: 44, marginTop: spacing.xs },
+  backText: { color: colors.onSurface, fontSize: 16, fontWeight: "700" },
   listHeader: { paddingHorizontal: spacing.lg, marginTop: spacing.lg },
   listTitle: { color: colors.onSurface, fontSize: 22, fontWeight: "900" },
   listSub: { color: colors.muted, marginTop: 4 },

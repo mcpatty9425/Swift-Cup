@@ -27,7 +27,7 @@ export default function RoundScreen({ round, title, format }: { round: 1 | 2 | 3
           <Pressable
             key={r}
             testID={`round-switch-${r}`}
-            onPress={() => r !== round && router.replace(`/r${r}` as any)}
+            onPress={() => r !== round && router.setParams({ n: String(r) })}
             style={[styles.swBtn, r === round && styles.swBtnActive]}
           >
             <Text style={[styles.swText, r === round && styles.swTextActive]}>ROUND {r}</Text>

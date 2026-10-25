@@ -1,6 +1,6 @@
 // Beige + Navy palette (Ryder Cup / Masters feel).
 import { useMemo } from "react";
-import { Appearance, StyleSheet, useColorScheme } from "react-native";
+import { Appearance, ImageStyle, StyleSheet, TextStyle, ViewStyle, useColorScheme } from "react-native";
 
 export type ColorScheme = "light" | "dark";
 
@@ -74,11 +74,11 @@ export function useTheme(): { scheme: ColorScheme; colors: ThemeColors } {
 
 export const colors = palette;
 
-export function makeStyles<T extends StyleSheet.NamedStyles<T> | StyleSheet.NamedStyles<any>>(
-  factory: (colors: ThemeColors) => T & StyleSheet.NamedStyles<any>,
+export function makeStyles<T extends Record<string, ViewStyle | TextStyle | ImageStyle>>(
+  factory: (colors: ThemeColors) => T,
 ): () => T {
   return function useStyles(): T {
-    return useMemo(() => StyleSheet.create(factory(palette)), []);
+    return useMemo(() => StyleSheet.create(factory(palette)) as T, []);
   };
 }
 

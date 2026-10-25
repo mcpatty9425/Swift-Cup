@@ -85,3 +85,10 @@ Default **1926**; see `/app/memory/test_credentials.md`.
 - Offline-first: per-hole edits in AsyncStorage, pending queue, sync every 8s/on foreground, per-hole last-write-wins on server (POST /api/scores/sync), Synced/Waiting indicator
 - Admin /score-admin: handicap method (as entered / course handicap), allowance 100/95, per-player PH override, course editor (par/SI/rating/slope)
 - Courses seeded: R2 Mercury Bay (71, 68.7/111), R3 The Dunes (72, 72.2/128)
+
+## Iteration 9 — Expo SDK 58 upgrade
+- expo 58 / expo-router 58 / RN 0.88 / React 19.3; expo-doctor 20/20; tsc clean
+- Removed @expo/vector-icons; expo-router plugin asyncRoutes web:false
+- Round detail moved to nested stack (tabs)/rounds/[n] (hidden tabs no longer navigable in SDK 58); admin All Bios moved to root /bios with Back button
+- Safe keep-awake hook on score entry (web wake-lock error fixed)
+- Known: dev-only Expo Router 58 warning "ROUTE_NAMES_CHANGED not handled" toast in web preview (not in production)
